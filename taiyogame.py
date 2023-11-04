@@ -13,7 +13,7 @@ dt = 0
 
 WIDTH = screen.get_width()
 HEIGHT = screen.get_height()
-BALL_RADIUS=40
+BALL_RADIUS = 40
 
 # Background image
 background_image = pygame.image.load("images/background.jpg").convert()
