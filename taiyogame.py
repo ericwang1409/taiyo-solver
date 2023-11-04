@@ -193,6 +193,7 @@ while running:
                 space.reindex_shapes_for_body(current_ball.body)
                 balls.append(current_ball)
                 if frame_count == 0:
+                    frame_count = 1
                     current_frames = 1
                 else:
                     current_frames = frame_count
