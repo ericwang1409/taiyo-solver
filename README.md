@@ -1,1 +1,1 @@
-# tayio-solver
+# taiyo-solver
