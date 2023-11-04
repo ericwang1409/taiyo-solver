@@ -66,7 +66,8 @@ static_lines = [
 ]
 
 for line in static_lines:
-    line.elasticity = 0.95  # To make the ball bounce a bit
+    line.elasticity = 0  # To make the ball bounce a bit
+    line.friction = 0.5
     space.add(line)
 
 class Ball:
@@ -82,7 +83,8 @@ class Ball:
         self.body = pymunk.Body(mass, moment, bodytype)
         self.body.position = position
         self.shape = pymunk.Circle(self.body, self.radius)
-        self.shape.elasticity = 0.95
+        self.shape.elasticity = 0
+        self.shape.friction = 0.5
         space.add(self.body, self.shape)
         
         # Load the image for the ball
@@ -91,7 +93,7 @@ class Ball:
         
     def update(self, dt):
         # The physical position will be updated by the Pymunk space.step() method
-        pass
+        ball.body.angular_velocity *= 0.9
     
     def draw(self, screen):
         # Get the position for Pygame (adjust for the coordinate system if needed)
@@ -120,8 +122,8 @@ class Ball:
         screen.blit(circle_surf, rect.topleft)
 
 balls = [
-    Ball(position=(641, 380), mass=10, planetIndex=3),
-    Ball(position=(640, 360), mass=10, planetIndex=5),
+    Ball(position=(641, 380), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
+    Ball(position=(640, 360), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
 ]
 
 # Returns the position of a new ball
