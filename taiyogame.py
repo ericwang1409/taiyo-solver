@@ -57,6 +57,10 @@ for line in static_lines:
     line.elasticity = 0.95  # To make the ball bounce a bit
     space.add(line)
 
+# All ball features
+ball_radii = [box_width / 26.96, box_width / 18.78, box_width / 13.19, box_width / 12.125, box_width / 9.46, box_width / 7.76, box_width / 7.53, box_width / 5.64, box_width / 4.67, box_width / 3.29, box_width / 3.54]
+scale_factors = [2.4, 2.9, 2.4, 2.4, 2.4, 2.7, 2.9, 3, 2.2, 3, 4]
+planet_names=['pluto','moon','mercury','mars','venus','earth','neptune','uranus','saturn','jupiter','sun']
 
 # Create a dynamic ball
 mass = 1
@@ -74,12 +78,20 @@ for i in range(300):
     space.step(1 / 50.0)
     print(ball_body.position)  # Optionally print the position of the ball
 
+# Define balls list
+balls = []
+
+ball_dropping = False
+
 # Main loop
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 and not ball_dropping:
+                ball_dropping = True
 
     screen.fill((255, 255, 255))  # Fill the screen with white background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
