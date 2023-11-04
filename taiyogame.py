@@ -132,10 +132,14 @@ ball_dropping = False
 
 # Set up collision handler and collision_callback function
 handler = space.add_collision_handler(1, 1)
+
 def collision_callback(arbiter,space,data):
     print(f"arbiter={arbiter}")
     print(f"arbiter.shapes={arbiter.shapes}")
     print(f"data={data}")
+    return True
+handler.begin = collision_callback
+
 
 # Main loop
 running = True
@@ -150,8 +154,6 @@ while running:
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
     
-    handler.begin = collision_callback
-
     for ball in balls:
         ball.update(1 / 50.0)
 
