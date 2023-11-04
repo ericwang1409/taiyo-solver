@@ -58,9 +58,9 @@ ball_image = pygame.transform.scale(ball_image, (radius * 2, radius * 2))  # The
 
 # Create static lines to form a U-shape
 static_lines = [
-    pymunk.Segment(space.static_body, bottom_left, top_left, 5),
-    pymunk.Segment(space.static_body, bottom_left, bottom_right, 5),
-    pymunk.Segment(space.static_body, bottom_right, top_right, 5)
+    pymunk.Segment(space.static_body, bottom_left, top_left, 2),
+    pymunk.Segment(space.static_body, bottom_left, bottom_right, 2),
+    pymunk.Segment(space.static_body, bottom_right, top_right, 2)
 ]
 
 for line in static_lines:
