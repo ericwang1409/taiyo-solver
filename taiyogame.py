@@ -79,7 +79,8 @@ class Ball:
         self.body.position = position
         self.shape = pymunk.Circle(self.body, self.radius)
         self.shape.elasticity = 0.95
-        space.add(self.body, self.shape)
+        self.shape.collision_type = 1  # Assign a collision type for balls
+        space.add(self.body, self.shape) # TODO Add collision handler
         
         # Load the image for the ball
         self.image = pygame.image.load("images/" + self.planet + ".png").convert_alpha()
@@ -115,6 +116,7 @@ class Ball:
         # Blit the new circle_surf onto the screen
         screen.blit(circle_surf, rect.topleft)
 
+# Define balls list
 balls = [
     Ball(position=(641, 380), mass=1, planetIndex=9),
     Ball(position=(640, 360), mass=1, planetIndex=10),
@@ -126,9 +128,14 @@ for i in range(300):
     space.step(1 / 50.0)
     # print(ball_body.position)  #a Optionally print the position of the ball
 
-# Define balls list
-
 ball_dropping = False
+
+# Set up collision handler and collision_callback function
+handler = space.add_collision_handler(1, 1)
+def collision_callback(arbiter,space,data):
+    print(f"arbiter={arbiter}")
+    print(f"arbiter.shapes={arbiter.shapes}")
+    print(f"data={data}")
 
 # Main loop
 running = True
@@ -142,6 +149,8 @@ while running:
 
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
+    
+    handler.begin = collision_callback
 
     for ball in balls:
         ball.update(1 / 50.0)
