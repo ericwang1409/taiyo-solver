@@ -60,9 +60,9 @@ ball_image = pygame.transform.scale(ball_image, (radius * 2, radius * 2))  # The
 
 # Create static lines to form a U-shape
 static_lines = [
-    pymunk.Segment(space.static_body, bottom_left, top_left, 2),
-    pymunk.Segment(space.static_body, bottom_left, bottom_right, 2),
-    pymunk.Segment(space.static_body, bottom_right, top_right, 2)
+    pymunk.Segment(space.static_body, bottom_left, top_left, 3),
+    pymunk.Segment(space.static_body, bottom_left, bottom_right, 3),
+    pymunk.Segment(space.static_body, bottom_right, top_right, 3)
 ]
 
 for line in static_lines:
@@ -140,8 +140,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and not ball_dropping:
+        if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+            if not ball_dropping:
                 ball_dropping = True
                 current_ball.body.body_type = pymunk.Body.DYNAMIC
                 current_ball.body.mass = 1
@@ -152,15 +152,10 @@ while running:
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
        
     current_ball.draw(screen)
-    print(current_ball.body.position)
     # Draw the balls
     for ball in balls:
         ball.draw(screen)
         ball.update(1 / 50.0)
-
-    # ball_position = int(ball_body.position.x), int(ball_body.position.y)  # Flip the y-coordinate for Pygame
-    # ball_rect = ball_image.get_rect(center=ball_position)
-    # screen.blit(ball_image, ball_rect)
 
     # Draw scoreboard
     # Position scoreboard boundaries
@@ -188,12 +183,10 @@ while running:
     if not ball_dropping:
         if keys[pygame.K_a]:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x - (300 * dt), current_ball.body.position.y)
-            # current_ball.body.position[0] -= 300 * dt
         if keys[pygame.K_d]:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x + (300 * dt), current_ball.body.position.y)
-            #current_ball.body.position[0] += 300 * dt
-        #if (box_x) < mouse[0] < (box_x + box_width):
-            #current_ball.body.position[0] = mouse[0] 
+        if (box_x) < mouse[0] < (box_x + box_width):
+            current_ball.body.position = pymunk.Vec2d(mouse[0], current_ball.body.position.y)
 
     # Ball dropping logic
     if ball_dropping:
