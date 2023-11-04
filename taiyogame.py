@@ -69,8 +69,9 @@ for line in static_lines:
     space.add(line)
 
 class Ball:
-    def __init__(self, space, position, mass, radius, image_path, scale_factor=1):
-        self.radius = radius
+    def __init__(self, position, mass, planetIndex):
+        self.radius = ball_radii[planetIndex]
+        self.planet = planet_names[planetIndex]
         self.is_resting = False
         
         # Pymunk physics setup
@@ -82,8 +83,8 @@ class Ball:
         space.add(self.body, self.shape)
         
         # Load the image for the ball
-        self.image = pygame.image.load(image_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (int(self.radius * 2 * scale_factor), int(self.radius * 2 * scale_factor)))
+        self.image = pygame.image.load("images/" + self.planet + ".png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (int(self.radius * scale_factors[planetIndex]), int(self.radius * scale_factors[planetIndex])))
         
     def update(self, dt):
         # The physical position will be updated by the Pymunk space.step() method
@@ -91,27 +92,33 @@ class Ball:
     
     def draw(self, screen):
         # Get the position for Pygame (adjust for the coordinate system if needed)
-        position = self.body.position.x, self.body.position.y  # No flipping of y-coordinate in this example
+        # position = self.body.position.x, self.body.position.y  # No flipping of y-coordinate in this example
         
-        # Get a rect structure from the image
-        rect = self.image.get_rect(center=position)
+        # # Get a rect structure from the image
+        # rect = self.image.get_rect(center=position)
         
-        # Blit the image onto the screen
-        screen.blit(self.image, rect.topleft)
+        # # Blit the image onto the screen
+        # screen.blit(self.image, rect.topleft)
 
-# Create a dynamic ball
-# mass = 1
-# radius = 25
-# moment = pymunk.moment_for_circle(mass, 0, radius)  # 1st argument is mass, 2nd is inner radius, 3rd is outer radius
-# ball_body = pymunk.Body(mass, moment)
-# ball_body.position = (300, 200)  # Starting position above the U-shape
-# ball_shape = pymunk.Circle(ball_body, radius)
-# ball_shape.elasticity = 0.95
-# space.add(ball_body, ball_shape)
+        size = self.image.get_size()
+
+        circle_surf = pygame.Surface(size, pygame.SRCALPHA)
+
+        # Draw a circle onto this new surface with the same dimensions as the image
+        pygame.draw.circle(circle_surf, (255, 255, 255), (size[0]//2, size[1]//2), self.radius)
+
+        # Get a rect structure from the image
+        rect = self.image.get_rect(center=(int(self.body.position.x), int(self.body.position.y)))
+
+        # Blit the original image onto the circle_surf using the circle as a mask (only the parts of the image that overlap with the white circle will be blitted)
+        circle_surf.blit(self.image, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+        # Blit the new circle_surf onto the screen
+        screen.blit(circle_surf, rect.topleft)
 
 balls = [
-    Ball(space, (641, 380), 1, 25, "images/sun.png"),
-    Ball(space, (640, 360), 1, 25, "images/venus.png"),
+    Ball(position=(641, 380), mass=1, planetIndex=9),
+    Ball(position=(640, 360), mass=1, planetIndex=10),
 ]
 
 # Returns the position of a new ball
