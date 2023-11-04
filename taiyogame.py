@@ -97,6 +97,35 @@ while running:
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
     pygame.display.flip()  # Update the full display Surface to the screen
 
+    # Draw scoreboard
+    # Position scoreboard boundaries
+    # TODO Put an image there
+    # Place score centered in box
+    pygame.draw.line(screen, "white", score_bottom_left, score_bottom_right, 4)
+    pygame.draw.line(screen, "white", score_bottom_left, score_top_left, 4)
+    pygame.draw.line(screen, "white", score_bottom_right, score_top_right, 4)
+    pygame.draw.line(screen, "white", score_top_left, score_top_right, 4)
+    score = 100 # TODO Don't hardcode this
+    font_size = 30
+    font = pygame.font.Font(None,font_size)
+    score_text = font.render(str(score), True, pygame.Color('white'))
+    score_rect = score_text.get_rect()
+
+    # Calculate the center position
+    score_box_center_x = (score_bottom_left[0] + score_top_right[0]) / 2
+    score_box_center_y = (score_bottom_left[1] + score_top_left[1]) / 2
+    score_rect.center = (score_box_center_x, score_box_center_y)
+
+    keys = pygame.key.get_pressed()
+    mouse = pygame.mouse.get_pos()
+    if not ball_dropping:
+        if keys[pygame.K_a]:
+            current_ball.position.x -= 300 * dt
+        if keys[pygame.K_d]:
+            current_ball.position.x += 300 * dt
+        if (box_x) < mouse[0] < (box_x + box_width):
+            current_ball.position.x = mouse[0]
+
     space.step(1 / 50.0)  # Step the simulation
     clock.tick(50)  # Limit the frame rate to 50 frames per second
 
