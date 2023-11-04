@@ -95,7 +95,6 @@ while running:
 
     screen.fill((255, 255, 255))  # Fill the screen with white background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
-    pygame.display.flip()  # Update the full display Surface to the screen
 
     # Draw scoreboard
     # Position scoreboard boundaries
@@ -126,6 +125,7 @@ while running:
         if (box_x) < mouse[0] < (box_x + box_width):
             current_ball.position.x = mouse[0]
 
+    pygame.display.flip()  # Update the full display Surface to the screen
     space.step(1 / 50.0)  # Step the simulation
     clock.tick(50)  # Limit the frame rate to 50 frames per second
 
