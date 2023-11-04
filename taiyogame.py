@@ -13,7 +13,7 @@ dt = 0
 
 WIDTH = screen.get_width()
 HEIGHT = screen.get_height()
-BALL_RADIUS=40
+BALL_RADIUS = 40
 
 # Background image
 background_image = pygame.image.load("images/background.jpg").convert()
@@ -269,9 +269,9 @@ while running:
     pygame.draw.line(screen, "white", score_bottom_left, score_top_left, 4)
     pygame.draw.line(screen, "white", score_bottom_right, score_top_right, 4)
     pygame.draw.line(screen, "white", score_top_left, score_top_right, 4)
-    font_size = 30
+    font_size = 50
     font = pygame.font.Font(None,font_size)
-    score_text = font.render(str(score), True, pygame.Color('white'))
+    score_text = font.render(str(score), True, pygame.Color(143, 64, 225))
     score_rect = score_text.get_rect()
 
     # Calculate the center position
@@ -300,10 +300,13 @@ while running:
         ball_dropping = False
         current_frames = 90
 
-    # End game condition
-    pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
+    # End game conditions
     for ball in balls:
-        if (ball.body.position.y - ball.radius < (box_y + 20)) and not ball_dropping:
+        if (ball.body.position.y - ball.radius < (box_y + 50)) and not ball_dropping:
+            pygame.draw.line(screen, "white", (box_x, box_y + 10), (box_x + box_width, box_y + 10), 2)
+        if (ball.body.position.y - ball.radius < (box_y + 10)) and not ball_dropping:
+            for ball in balls:
+                score += ball.planetIndex
             show_game_over_screen()
             score = 0
             clear_balls(space, balls, current_ball)
