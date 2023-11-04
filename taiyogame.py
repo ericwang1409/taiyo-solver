@@ -13,14 +13,14 @@ WIDTH = screen.get_width()
 HEIGHT = screen.get_height()
 BALL_RADIUS=40
 
-# Define box and score box dimensions, and planet radii and names
-
+# Background image
 background_image = pygame.image.load("images/background.jpg").convert()
 background_image_rect = background_image.get_rect()
 background_image_width = background_image_rect.width
 background_image_height = background_image_rect.height
 background_image = pygame.transform.scale(background_image, (background_image_width * 0.65, background_image_height * 0.65))
 
+# Barrel box setup
 box_height = HEIGHT // 1.4
 box_width = box_height // 1.42857142857
 box_x = (WIDTH - box_width) // 2  # Horizontally center
@@ -30,6 +30,17 @@ bottom_left = (box_x, box_y + box_height)
 bottom_right = (box_x + box_width, box_y + box_height)
 top_right = (box_x + box_width, box_y)
 top_left = (box_x, box_y)
+
+# Score box setup
+score_box_width = box_width // 1.5 # Half the width of the box
+score_box_height = (HEIGHT - (box_y + box_height)) / 1.5 # Two thirds of the space below the box
+score_box_x = (WIDTH - score_box_width) // 2  # Horizontally center
+score_box_y = (HEIGHT + (box_y + box_height) - score_box_height) // 2 # Vertically center below box
+
+score_bottom_left = (score_box_x, score_box_y + score_box_height)
+score_bottom_right = (score_box_x + score_box_width, score_box_y + score_box_height)
+score_top_right = (score_box_x + score_box_width, score_box_y)
+score_top_left = (score_box_x, score_box_y)
 
 # Create a space and set the gravity
 space = pymunk.Space()
@@ -45,6 +56,7 @@ static_lines = [
 for line in static_lines:
     line.elasticity = 0.95  # To make the ball bounce a bit
     space.add(line)
+
 
 # Create a dynamic ball
 mass = 1
