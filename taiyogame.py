@@ -147,6 +147,52 @@ current_ball = spawn_new_ball(0)
 
 score = 0
 
+# Game over screen function
+def show_game_over_screen():
+    screen.fill((0, 0, 0))  # Fill the screen with black or any other color for the game over screen
+
+    # Display the score
+    font = pygame.font.Font(None, 74)
+    text = font.render(f'Game Over! Your Score: {score}', True, (255, 255, 255))
+    text_rect = text.get_rect(center=(WIDTH / 2, HEIGHT / 3))
+    screen.blit(text, text_rect)
+
+    # Draw the replay button
+    button_color = (0, 255, 0)  # Green color
+    button_rect = pygame.Rect(WIDTH / 2 - 100, HEIGHT / 2, 200, 60)  # Create a rect for the button
+    pygame.draw.rect(screen, button_color, button_rect)  # Draw the button
+
+    # Button text
+    button_text = font.render('Replay', True, (0, 0, 0))
+    button_text_rect = button_text.get_rect(center=button_rect.center)
+    screen.blit(button_text, button_text_rect)
+
+    pygame.display.flip()  # Update the display
+
+    # Wait for the player to click the replay button
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit(0)
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_pos = event.pos
+                if button_rect.collidepoint(mouse_pos):
+                    waiting = False
+
+# State clear (for starting new game instance)
+def clear_balls(space, balls, current_ball):
+    if current_ball in balls:
+        balls.remove(current_ball)
+    if current_ball.shape in space.shapes:
+        space.remove(current_ball.shape, current_ball.body)
+
+    for ball in balls:
+        # Remove the shape and body from the space
+        space.remove(ball.shape, ball.body)
+    balls.clear() 
+
 # Set up collision handler and collision_callback function
 handler = space.add_collision_handler(1, 1)
 
@@ -258,8 +304,11 @@ while running:
     pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
     for ball in balls:
         if (ball.body.position.y - ball.radius < (box_y + 20)) and not ball_dropping:
-            print("GAME OVER")
-            game_over = True
+            show_game_over_screen()
+            score = 0
+            clear_balls(space, balls, current_ball)
+            current_ball = spawn_new_ball(0)
+            frame_count = 1
             break
     
     pygame.display.flip()
