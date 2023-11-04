@@ -60,19 +60,21 @@ ball_image = pygame.transform.scale(ball_image, (radius * 2, radius * 2))  # The
 
 # Create static lines to form a U-shape
 static_lines = [
-    pymunk.Segment(space.static_body, bottom_left, top_left, 2),
-    pymunk.Segment(space.static_body, bottom_left, bottom_right, 2),
-    pymunk.Segment(space.static_body, bottom_right, top_right, 2)
+    pymunk.Segment(space.static_body, bottom_left, top_left, 3),
+    pymunk.Segment(space.static_body, bottom_left, bottom_right, 3),
+    pymunk.Segment(space.static_body, bottom_right, top_right, 3)
 ]
 
 for line in static_lines:
-    line.elasticity = 0.95  # To make the ball bounce a bit
+    line.elasticity = 0  # To make the ball bounce a bit
+    line.friction = 0.5
     space.add(line)
 
 class Ball:
     def __init__(self, position, mass, planetIndex, bodytype=pymunk.Body.KINEMATIC):
         self.radius = ball_radii[planetIndex]
         self.planet = planet_names[planetIndex]
+        self.planetIndex = planetIndex
         self.is_resting = False
         self.mass = mass
         
@@ -82,8 +84,10 @@ class Ball:
         self.body = pymunk.Body(mass, moment, bodytype)
         self.body.position = position
         self.shape = pymunk.Circle(self.body, self.radius)
-        self.shape.elasticity = 0.95
+        self.shape.elasticity = 0
+        self.shape.friction = 0.5
         self.shape.collision_type = 1  # Assign a collision type for balls
+        self.shape.body.data = self
         space.add(self.body, self.shape) # TODO Add collision handler
         
         # Load the image for the ball
@@ -92,7 +96,7 @@ class Ball:
         
     def update(self, dt):
         # The physical position will be updated by the Pymunk space.step() method
-        pass
+        ball.body.angular_velocity *= 0.9
     
     def draw(self, screen):
         # Get the position for Pygame (adjust for the coordinate system if needed)
@@ -120,10 +124,16 @@ class Ball:
         # Blit the new circle_surf onto the screen
         screen.blit(circle_surf, rect.topleft)
 
+    def delete(self, space):
+        # Remove the shape and body from the space
+        space.remove(self.shape, self.body)
+        if self in balls: # Might not want to reference balls here? Though it is a global var I think.
+            balls.remove(self)
+
 # Define balls list
 balls = [
-    Ball(position=(641, 380), mass=10, planetIndex=3),
-    Ball(position=(640, 360), mass=10, planetIndex=5),
+    Ball(position=(640, 300), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
+    Ball(position=(640, 500), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
 ]
 
 # Returns the position of a new ball
@@ -142,24 +152,33 @@ def ball_collision_handler(arbiter, space, data):
     if ball_shape1.radius == ball_shape2.radius:
 
         ball1 = ball_shape1.body.data
+        print(ball1)
+        print(vars(ball1))
         ball2 = ball_shape2.body.data
+        print(ball2)
+        print(vars(ball2))
 
         # Determine the lower ball's position
-        new_position = min(ball1.body.position, ball2.body.position, key=lambda pos: pos.y)
+        planetIndex = ball1.planetIndex
+        if planetIndex < len(planet_names)-1:
 
-        # Create a new Ball instance at the position of the lower ball
-        new_ball = Ball(space, ball_shape1.radius * (2 ** (1/3)), new_position)
+            lower_ball = ball1 if ball1.body.position[1] < ball2.body.position[1] else ball2
+            new_position = lower_ball.body.position
 
-        # Remove the old Ball instances
-        ball1.remove(space)
-        ball2.remove(space)
+            # Create a new Ball instance at the position of the lower ball
+            new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
+            print("HERE")
+            print(new_ball)
+            print(vars(new_ball))
+            ball1.delete(space)
+            ball2.delete(space)
+            balls.append(new_ball)
+            
 
-        # Optionally, clean up the Ball instances if they are stored elsewhere
-        # ...
+            # Optionally, clean up the Ball instances if they are stored elsewhere
+            # ...
 
-        return True
-
-    return False
+    return True
 handler.begin = ball_collision_handler
 
 ball_dropping = False
@@ -170,8 +189,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and not ball_dropping:
+        if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+            if not ball_dropping:
                 ball_dropping = True
                 current_ball.body.body_type = pymunk.Body.DYNAMIC
                 current_ball.body.mass = 1
@@ -187,10 +206,6 @@ while running:
     for ball in balls:
         ball.draw(screen)
         ball.update(1 / 50.0)
-
-    # ball_position = int(ball_body.position.x), int(ball_body.position.y)  # Flip the y-coordinate for Pygame
-    # ball_rect = ball_image.get_rect(center=ball_position)
-    # screen.blit(ball_image, ball_rect)
 
     # Draw scoreboard
     # Position scoreboard boundaries
@@ -218,12 +233,10 @@ while running:
     if not ball_dropping:
         if keys[pygame.K_a]:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x - (300 * dt), current_ball.body.position.y)
-            # current_ball.body.position[0] -= 300 * dt
         if keys[pygame.K_d]:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x + (300 * dt), current_ball.body.position.y)
-            #current_ball.body.position[0] += 300 * dt
-        #if (box_x) < mouse[0] < (box_x + box_width):
-            #current_ball.body.position[0] = mouse[0] 
+        if (box_x) < mouse[0] < (box_x + box_width):
+            current_ball.body.position = pymunk.Vec2d(mouse[0], current_ball.body.position.y)
 
     # Ball dropping logic
     if ball_dropping:
