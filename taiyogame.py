@@ -2,6 +2,8 @@ import pygame
 import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
+import random
+import time
 
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -68,14 +70,16 @@ for line in static_lines:
     space.add(line)
 
 class Ball:
-    def __init__(self, position, mass, planetIndex):
+    def __init__(self, position, mass, planetIndex, bodytype=pymunk.Body.KINEMATIC):
         self.radius = ball_radii[planetIndex]
         self.planet = planet_names[planetIndex]
         self.is_resting = False
+        self.mass = mass
         
         # Pymunk physics setup
         moment = pymunk.moment_for_circle(mass, 0, self.radius)
-        self.body = pymunk.Body(mass, moment)
+        self.moment = moment
+        self.body = pymunk.Body(mass, moment, bodytype)
         self.body.position = position
         self.shape = pymunk.Circle(self.body, self.radius)
         self.shape.elasticity = 0.95
@@ -118,15 +122,15 @@ class Ball:
 
 # Define balls list
 balls = [
-    Ball(position=(641, 380), mass=1, planetIndex=9),
-    Ball(position=(640, 360), mass=1, planetIndex=10),
+    Ball(position=(641, 380), mass=10, planetIndex=3),
+    Ball(position=(640, 360), mass=10, planetIndex=5),
 ]
 
-# Simulation loop
-for i in range(300):
-    # Step the simulation
-    space.step(1 / 50.0)
-    # print(ball_body.position)  #a Optionally print the position of the ball
+# Returns the position of a new ball
+def spawn_new_ball(planet_index):
+    return Ball(position=(640,100), mass=1, planetIndex=planet_index)          #Ball(position=(WIDTH / 2, box_y - ball_radii[planet_index]), mass=1, planetIndex=planet_index)
+
+current_ball = spawn_new_ball(0)
 
 ball_dropping = False
 
@@ -150,16 +154,20 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 and not ball_dropping:
                 ball_dropping = True
+                current_ball.body.body_type = pymunk.Body.DYNAMIC
+                current_ball.body.mass = 1
+                current_ball.body.moment = pymunk.moment_for_circle(1, 0, current_ball.radius, (0, 0))
+                space.reindex_shapes_for_body(current_ball.body)
 
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
-    
-    for ball in balls:
-        ball.update(1 / 50.0)
-
+       
+    current_ball.draw(screen)
+    print(current_ball.body.position)
     # Draw the balls
     for ball in balls:
         ball.draw(screen)
+        ball.update(1 / 50.0)
 
     # ball_position = int(ball_body.position.x), int(ball_body.position.y)  # Flip the y-coordinate for Pygame
     # ball_rect = ball_image.get_rect(center=ball_position)
@@ -184,18 +192,36 @@ while running:
     score_box_center_y = (score_bottom_left[1] + score_top_left[1]) / 2
     score_rect.center = (score_box_center_x, score_box_center_y)
 
+    # Movement for the dropper-position ball
     keys = pygame.key.get_pressed()
     mouse = pygame.mouse.get_pos()
-    # if not ball_dropping:
-    #     if keys[pygame.K_a]:
-    #         current_ball.position.x -= 300 * dt
-    #     if keys[pygame.K_d]:
-    #         current_ball.position.x += 300 * dt
-    #     if (box_x) < mouse[0] < (box_x + box_width):
-    #         current_ball.position.x = mouse[0]
 
-    pygame.display.flip()  # Update the full display Surface to the screen
-    space.step(1 / 50.0)  # Step the simulation
-    clock.tick(50)  # Limit the frame rate to 50 frames per second
+    if not ball_dropping:
+        if keys[pygame.K_a]:
+            current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x - (300 * dt), current_ball.body.position.y)
+            # current_ball.body.position[0] -= 300 * dt
+        if keys[pygame.K_d]:
+            current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x + (300 * dt), current_ball.body.position.y)
+            #current_ball.body.position[0] += 300 * dt
+        #if (box_x) < mouse[0] < (box_x + box_width):
+            #current_ball.body.position[0] = mouse[0] 
+
+    # Ball dropping logic
+    if ball_dropping:
+        pass
+
+    # End game condition
+    pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
+    # End game condition
+    for ball in balls:
+        if ball.body.position.y - ball.radius < (box_y + 100):
+            print("GAME OVER")
+            time.sleep(5)
+            running = False
+            break
+    
+    pygame.display.flip()
+    dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
+    space.step(dt)  # Step the simulation
 
 pygame.quit()
