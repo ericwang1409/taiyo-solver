@@ -87,12 +87,12 @@ class Ball:
         self.shape.elasticity = 0
         self.shape.friction = 0.5
         self.shape.collision_type = 1  # Assign a collision type for balls
-        self.shape.body.data = self
         space.add(self.body, self.shape) # TODO Add collision handler
         
         # Load the image for the ball
         self.image = pygame.image.load("images/" + self.planet + ".png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (int(self.radius * scale_factors[planetIndex]), int(self.radius * scale_factors[planetIndex])))
+        self.shape.body.data = self
         
     def update(self, dt):
         # The physical position will be updated by the Pymunk space.step() method
@@ -139,10 +139,13 @@ def spawn_new_ball(planet_index):
 
 current_ball = spawn_new_ball(0)
 
+score = 0
+
 # Set up collision handler and collision_callback function
 handler = space.add_collision_handler(1, 1)
 
 def ball_collision_handler(arbiter, space, data):
+    global score
     ball_shape1, ball_shape2 = arbiter.shapes
 
     # Check if both shapes are balls and have the same radius
@@ -163,10 +166,8 @@ def ball_collision_handler(arbiter, space, data):
             ball1.delete(space)
             ball2.delete(space)
             balls.append(new_ball)
-            
 
-            # Optionally, clean up the Ball instances if they are stored elsewhere
-            # ...
+            score += 2*(planetIndex+1)
 
     return True
 handler.begin = ball_collision_handler
@@ -211,7 +212,6 @@ while running:
     pygame.draw.line(screen, "white", score_bottom_left, score_top_left, 4)
     pygame.draw.line(screen, "white", score_bottom_right, score_top_right, 4)
     pygame.draw.line(screen, "white", score_top_left, score_top_right, 4)
-    score = 100 # TODO Don't hardcode this
     font_size = 30
     font = pygame.font.Font(None,font_size)
     score_text = font.render(str(score), True, pygame.Color('white'))
