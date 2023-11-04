@@ -132,18 +132,37 @@ def spawn_new_ball(planet_index):
 
 current_ball = spawn_new_ball(0)
 
-ball_dropping = False
-
 # Set up collision handler and collision_callback function
 handler = space.add_collision_handler(1, 1)
 
-def collision_callback(arbiter,space,data):
-    print(f"arbiter={arbiter}")
-    print(f"arbiter.shapes={arbiter.shapes}")
-    print(f"data={data}")
-    return True
-handler.begin = collision_callback
+def ball_collision_handler(arbiter, space, data):
+    ball_shape1, ball_shape2 = arbiter.shapes
 
+    # Check if both shapes are balls and have the same radius
+    if ball_shape1.radius == ball_shape2.radius:
+
+        ball1 = ball_shape1.body.data
+        ball2 = ball_shape2.body.data
+
+        # Determine the lower ball's position
+        new_position = min(ball1.body.position, ball2.body.position, key=lambda pos: pos.y)
+
+        # Create a new Ball instance at the position of the lower ball
+        new_ball = Ball(space, ball_shape1.radius * (2 ** (1/3)), new_position)
+
+        # Remove the old Ball instances
+        ball1.remove(space)
+        ball2.remove(space)
+
+        # Optionally, clean up the Ball instances if they are stored elsewhere
+        # ...
+
+        return True
+
+    return False
+handler.begin = ball_collision_handler
+
+ball_dropping = False
 
 # Main loop
 running = True
@@ -163,7 +182,7 @@ while running:
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
        
     current_ball.draw(screen)
-    print(current_ball.body.position)
+    # print(current_ball.body.position)
     # Draw the balls
     for ball in balls:
         ball.draw(screen)
