@@ -269,9 +269,9 @@ while running:
     pygame.draw.line(screen, "white", score_bottom_left, score_top_left, 4)
     pygame.draw.line(screen, "white", score_bottom_right, score_top_right, 4)
     pygame.draw.line(screen, "white", score_top_left, score_top_right, 4)
-    font_size = 30
+    font_size = 50
     font = pygame.font.Font(None,font_size)
-    score_text = font.render(str(score), True, pygame.Color('white'))
+    score_text = font.render(str(score), True, pygame.Color(143, 64, 225))
     score_rect = score_text.get_rect()
 
     # Calculate the center position
