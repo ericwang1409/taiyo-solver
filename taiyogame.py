@@ -300,10 +300,11 @@ while running:
         ball_dropping = False
         current_frames = 90
 
-    # End game condition
-    pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
+    # End game conditions
     for ball in balls:
-        if (ball.body.position.y - ball.radius < (box_y + 20)) and not ball_dropping:
+        if (ball.body.position.y - ball.radius < (box_y + 50)) and not ball_dropping:
+            pygame.draw.line(screen, "white", (box_x, box_y + 10), (box_x + box_width, box_y + 20), 2)
+        if (ball.body.position.y - ball.radius < (box_y + 10)) and not ball_dropping:
             show_game_over_screen()
             score = 0
             clear_balls(space, balls, current_ball)
