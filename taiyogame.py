@@ -44,6 +44,12 @@ score_bottom_right = (score_box_x + score_box_width, score_box_y + score_box_hei
 score_top_right = (score_box_x + score_box_width, score_box_y)
 score_top_left = (score_box_x, score_box_y)
 
+# side image
+side_image = pygame.image.load('images/wheel.png').convert_alpha()
+side_image_rect = side_image.get_rect()
+side_image_position = (top_left[0] - 350, top_left[1])
+side_image = pygame.transform.scale(side_image, (side_image_rect.width // 4, side_image_rect.height // 4))
+
 # Create a space and set the gravity
 space = pymunk.Space()
 space.gravity = (0, 981)  # Negative since y goes down in most renderers
@@ -199,6 +205,7 @@ while running:
                     current_frames = frame_count
 
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
+    screen.blit(side_image, side_image_position)  # Draw the side image
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
        
     current_ball.draw(screen)
@@ -259,6 +266,5 @@ while running:
     dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
     space.step(dt)  # Step the simulation
     frame_count = (frame_count + 1) % 50
-    print(frame_count)
 
 pygame.quit()
