@@ -2,6 +2,7 @@ import pygame
 import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
+import time
 
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -116,15 +117,9 @@ class Ball:
         screen.blit(circle_surf, rect.topleft)
 
 balls = [
-    Ball(position=(641, 380), mass=1, planetIndex=9),
-    Ball(position=(640, 360), mass=1, planetIndex=10),
+    Ball(position=(641, 380), mass=10, planetIndex=3),
+    Ball(position=(640, 360), mass=10, planetIndex=5),
 ]
-
-# Simulation loop
-for i in range(300):
-    # Step the simulation
-    space.step(1 / 50.0)
-    # print(ball_body.position)  #a Optionally print the position of the ball
 
 # Define balls list
 
@@ -182,6 +177,16 @@ while running:
     #         current_ball.position.x += 300 * dt
     #     if (box_x) < mouse[0] < (box_x + box_width):
     #         current_ball.position.x = mouse[0]
+
+    # End game condition
+    pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
+    # End game condition
+    for ball in balls:
+        if ball.body.position.y - ball.radius < (box_y + 100):
+            print("GAME OVER")
+            time.sleep(5)
+            running = False
+            break
 
     pygame.display.flip()  # Update the full display Surface to the screen
     space.step(1 / 50.0)  # Step the simulation
