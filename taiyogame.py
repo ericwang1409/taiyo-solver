@@ -152,11 +152,7 @@ def ball_collision_handler(arbiter, space, data):
     if ball_shape1.radius == ball_shape2.radius:
 
         ball1 = ball_shape1.body.data
-        print(ball1)
-        print(vars(ball1))
         ball2 = ball_shape2.body.data
-        print(ball2)
-        print(vars(ball2))
 
         # Determine the lower ball's position
         planetIndex = ball1.planetIndex
@@ -167,9 +163,6 @@ def ball_collision_handler(arbiter, space, data):
 
             # Create a new Ball instance at the position of the lower ball
             new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
-            print("HERE")
-            print(new_ball)
-            print(vars(new_ball))
             ball1.delete(space)
             ball2.delete(space)
             balls.append(new_ball)
