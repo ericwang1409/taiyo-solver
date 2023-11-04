@@ -69,14 +69,16 @@ for line in static_lines:
     space.add(line)
 
 class Ball:
-    def __init__(self, position, mass, planetIndex):
+    def __init__(self, position, mass, planetIndex, bodytype=pymunk.Body.KINEMATIC):
         self.radius = ball_radii[planetIndex]
         self.planet = planet_names[planetIndex]
         self.is_resting = False
+        self.mass = mass
         
         # Pymunk physics setup
         moment = pymunk.moment_for_circle(mass, 0, self.radius)
-        self.body = pymunk.Body(mass, moment)
+        self.moment = moment
+        self.body = pymunk.Body(mass, moment, bodytype)
         self.body.position = position
         self.shape = pymunk.Circle(self.body, self.radius)
         self.shape.elasticity = 0.95
@@ -123,16 +125,9 @@ balls = [
 
 # Returns the position of a new ball
 def spawn_new_ball(planet_index):
-    return Ball(pygame.Vector2(WIDTH / 2, box_y - ball_radii[planet_index]), pygame.Vector2(0, 0), planet_index)
+    return Ball(position=(640,100), mass=1, planetIndex=planet_index)          #Ball(position=(WIDTH / 2, box_y - ball_radii[planet_index]), mass=1, planetIndex=planet_index)
 
 current_ball = spawn_new_ball(0)
-
-
-# Simulation loop
-for i in range(300):
-    # Step the simulation
-    space.step(1 / 50.0)
-    # print(ball_body.position)  #a Optionally print the position of the ball
 
 # Define balls list
 
@@ -147,16 +142,20 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 and not ball_dropping:
                 ball_dropping = True
+                current_ball.body.body_type = pymunk.Body.DYNAMIC
+                current_ball.body.mass = 1
+                current_ball.body.moment = pymunk.moment_for_circle(1, 0, current_ball.radius, (0, 0))
+                space.reindex_shapes_for_body(current_ball.body)
 
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
-
-    for ball in balls:
-        ball.update(1 / 50.0)
-
+       
+    current_ball.draw(screen)
+    print(current_ball.body.position)
     # Draw the balls
     for ball in balls:
         ball.draw(screen)
+        ball.update(1 / 50.0)
 
     # ball_position = int(ball_body.position.x), int(ball_body.position.y)  # Flip the y-coordinate for Pygame
     # ball_rect = ball_image.get_rect(center=ball_position)
@@ -186,20 +185,21 @@ while running:
     mouse = pygame.mouse.get_pos()
     if not ball_dropping:
         if keys[pygame.K_a]:
-            current_ball.body.position.x -= 300 * dt
+            current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x - (300 * dt), current_ball.body.position.y)
+            # current_ball.body.position[0] -= 300 * dt
         if keys[pygame.K_d]:
-            current_ball.body.position.x += 300 * dt
-        if (box_x) < mouse[0] < (box_x + box_width):
-            current_ball.body.position.x = mouse[0] 
+            current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x + (300 * dt), current_ball.body.position.y)
+            #current_ball.body.position[0] += 300 * dt
+        #if (box_x) < mouse[0] < (box_x + box_width):
+            #current_ball.body.position[0] = mouse[0] 
 
     # Ball dropping logic
     if ball_dropping:
-        current_ball.velocity.y = 500
-        balls.append(current_ball)
+        pass
 
     
-    pygame.display.flip()  # Update the full display Surface to the screen
-    space.step(1 / 50.0)  # Step the simulation
-    clock.tick(50)  # Limit the frame rate to 50 frames per second
+    pygame.display.flip()
+    dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
+    space.step(dt)  # Step the simulation
 
 pygame.quit()
