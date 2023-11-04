@@ -3,6 +3,7 @@ import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
 import random
+import time
 
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -119,8 +120,8 @@ class Ball:
         screen.blit(circle_surf, rect.topleft)
 
 balls = [
-    Ball(position=(641, 380), mass=1, planetIndex=9),
-    Ball(position=(640, 360), mass=1, planetIndex=10),
+    Ball(position=(641, 380), mass=10, planetIndex=3),
+    Ball(position=(640, 360), mass=10, planetIndex=5),
 ]
 
 # Returns the position of a new ball
@@ -183,6 +184,7 @@ while running:
     # Movement for the dropper-position ball
     keys = pygame.key.get_pressed()
     mouse = pygame.mouse.get_pos()
+
     if not ball_dropping:
         if keys[pygame.K_a]:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x - (300 * dt), current_ball.body.position.y)
@@ -197,6 +199,15 @@ while running:
     if ball_dropping:
         pass
 
+    # End game condition
+    pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
+    # End game condition
+    for ball in balls:
+        if ball.body.position.y - ball.radius < (box_y + 100):
+            print("GAME OVER")
+            time.sleep(5)
+            running = False
+            break
     
     pygame.display.flip()
     dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
