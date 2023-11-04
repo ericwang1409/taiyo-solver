@@ -138,7 +138,7 @@ balls = [
 
 # Returns the position of a new ball
 def spawn_new_ball(planet_index):
-    return Ball(position=(640,100), mass=1, planetIndex=planet_index)          #Ball(position=(WIDTH / 2, box_y - ball_radii[planet_index]), mass=1, planetIndex=planet_index)
+    return Ball(position=(640,50), mass=1, planetIndex=planet_index)          #Ball(position=(WIDTH / 2, box_y - ball_radii[planet_index]), mass=1, planetIndex=planet_index)
 
 current_ball = spawn_new_ball(0)
 
@@ -190,12 +190,15 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
-            if not ball_dropping:
+            if not ball_dropping and current_ball.body.body_type == pymunk.Body.KINEMATIC:
                 ball_dropping = True
                 current_ball.body.body_type = pymunk.Body.DYNAMIC
                 current_ball.body.mass = 1
                 current_ball.body.moment = pymunk.moment_for_circle(1, 0, current_ball.radius, (0, 0))
                 space.reindex_shapes_for_body(current_ball.body)
+                balls.append(current_ball)
+                current_ball = spawn_new_ball(random.randint(0,4))
+                ball_dropping = False
 
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
@@ -226,16 +229,19 @@ while running:
     score_box_center_y = (score_bottom_left[1] + score_top_left[1]) / 2
     score_rect.center = (score_box_center_x, score_box_center_y)
 
+    # Draw the score text onto the screen
+    screen.blit(score_text, score_rect.topleft)
+
     # Movement for the dropper-position ball
     keys = pygame.key.get_pressed()
     mouse = pygame.mouse.get_pos()
 
-    if not ball_dropping:
+    if not ball_dropping and current_ball.body.body_type == pymunk.Body.KINEMATIC:
         if keys[pygame.K_a]:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x - (300 * dt), current_ball.body.position.y)
         if keys[pygame.K_d]:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x + (300 * dt), current_ball.body.position.y)
-        if (box_x) < mouse[0] < (box_x + box_width):
+        if (box_x) < mouse[0] < (box_x + box_width) and current_ball.body.body_type == pymunk.Body.KINEMATIC:
             current_ball.body.position = pymunk.Vec2d(mouse[0], current_ball.body.position.y)
 
     # Ball dropping logic
@@ -245,12 +251,12 @@ while running:
     # End game condition
     pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
     # End game condition
-    for ball in balls:
-        if ball.body.position.y - ball.radius < (box_y + 100):
-            print("GAME OVER")
-            time.sleep(5)
-            running = False
-            break
+    # for ball in balls:
+    #     if ball.body.position.y - ball.radius < (box_y + 100):
+    #         print("GAME OVER")
+    #         time.sleep(5)
+    #         running = False
+    #         break
     
     pygame.display.flip()
     dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
