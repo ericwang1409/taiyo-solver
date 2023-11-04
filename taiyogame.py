@@ -2,6 +2,7 @@ import pygame
 import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
+import random
 
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -113,6 +114,13 @@ balls = [
     Ball(space, (640, 360), 1, 25, "images/venus.png"),
 ]
 
+# Returns the position of a new ball
+def spawn_new_ball(planet_index):
+    return Ball(pygame.Vector2(WIDTH / 2, box_y - ball_radii[planet_index]), pygame.Vector2(0, 0), planet_index)
+
+current_ball = spawn_new_ball(0)
+
+
 # Simulation loop
 for i in range(300):
     # Step the simulation
@@ -166,16 +174,23 @@ while running:
     score_box_center_y = (score_bottom_left[1] + score_top_left[1]) / 2
     score_rect.center = (score_box_center_x, score_box_center_y)
 
+    # Movement for the dropper-position ball
     keys = pygame.key.get_pressed()
     mouse = pygame.mouse.get_pos()
-    # if not ball_dropping:
-    #     if keys[pygame.K_a]:
-    #         current_ball.position.x -= 300 * dt
-    #     if keys[pygame.K_d]:
-    #         current_ball.position.x += 300 * dt
-    #     if (box_x) < mouse[0] < (box_x + box_width):
-    #         current_ball.position.x = mouse[0]
+    if not ball_dropping:
+        if keys[pygame.K_a]:
+            current_ball.body.position.x -= 300 * dt
+        if keys[pygame.K_d]:
+            current_ball.body.position.x += 300 * dt
+        if (box_x) < mouse[0] < (box_x + box_width):
+            current_ball.body.position.x = mouse[0] 
 
+    # Ball dropping logic
+    if ball_dropping:
+        current_ball.velocity.y = 500
+        balls.append(current_ball)
+
+    
     pygame.display.flip()  # Update the full display Surface to the screen
     space.step(1 / 50.0)  # Step the simulation
     clock.tick(50)  # Limit the frame rate to 50 frames per second
