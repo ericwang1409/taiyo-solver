@@ -4,9 +4,32 @@ from pymunk import Vec2d
 import pymunk.pygame_util
 
 pygame.init()
-screen = pygame.display.set_mode((600, 600))
+screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 draw_options = pymunk.pygame_util.DrawOptions(screen)
+dt = 0
+
+WIDTH = screen.get_width()
+HEIGHT = screen.get_height()
+BALL_RADIUS=40
+
+# Define box and score box dimensions, and planet radii and names
+
+background_image = pygame.image.load("images/background.jpg").convert()
+background_image_rect = background_image.get_rect()
+background_image_width = background_image_rect.width
+background_image_height = background_image_rect.height
+background_image = pygame.transform.scale(background_image, (background_image_width * 0.65, background_image_height * 0.65))
+
+box_height = HEIGHT // 1.4
+box_width = box_height // 1.42857142857
+box_x = (WIDTH - box_width) // 2  # Horizontally center
+box_y = (HEIGHT - box_height) // 2 # Vertically center
+
+bottom_left = (box_x, box_y + box_height)
+bottom_right = (box_x + box_width, box_y + box_height)
+top_right = (box_x + box_width, box_y)
+top_left = (box_x, box_y)
 
 # Create a space and set the gravity
 space = pymunk.Space()
@@ -14,10 +37,11 @@ space.gravity = (0, -981)  # Negative since y goes down in most renderers
 
 # Create static lines to form a U-shape
 static_lines = [
-    pymunk.Segment(space.static_body, (150, 100), (150, 300), 5),
-    pymunk.Segment(space.static_body, (150, 100), (450, 100), 5),
-    pymunk.Segment(space.static_body, (450, 300), (450, 100), 5)
+    pymunk.Segment(space.static_body, bottom_left, top_left, 5),
+    pymunk.Segment(space.static_body, bottom_left, bottom_right, 5),
+    pymunk.Segment(space.static_body, bottom_right, top_right, 5)
 ]
+
 for line in static_lines:
     line.elasticity = 0.95  # To make the ball bounce a bit
     space.add(line)
