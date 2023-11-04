@@ -61,13 +61,13 @@ ball_image = pygame.transform.scale(ball_image, (radius * 2, radius * 2))  # The
 # Create static lines to form a U-shape
 static_lines = [
     pymunk.Segment(space.static_body, bottom_left, top_left, 3),
-    pymunk.Segment(space.static_body, bottom_left, bottom_right, 3),
+    pymunk.Segment(space.static_body, bottom_left, bottom_right, 5),
     pymunk.Segment(space.static_body, bottom_right, top_right, 3)
 ]
 
 for line in static_lines:
     line.elasticity = 0  # To make the ball bounce a bit
-    line.friction = 0.5
+    line.friction = 0.6
     space.add(line)
 
 class Ball:
@@ -251,8 +251,7 @@ while running:
     for ball in balls:
         if (ball.body.position.y - ball.radius < (box_y + 20)) and not ball_dropping:
             print("GAME OVER")
-            time.sleep(5)
-            running = False
+            game_over = True
             break
     
     pygame.display.flip()
