@@ -74,6 +74,7 @@ class Ball:
     def __init__(self, position, mass, planetIndex, bodytype=pymunk.Body.KINEMATIC):
         self.radius = ball_radii[planetIndex]
         self.planet = planet_names[planetIndex]
+        self.planetIndex = planetIndex
         self.is_resting = False
         self.mass = mass
         
@@ -85,7 +86,9 @@ class Ball:
         self.shape = pymunk.Circle(self.body, self.radius)
         self.shape.elasticity = 0
         self.shape.friction = 0.5
-        space.add(self.body, self.shape)
+        self.shape.collision_type = 1  # Assign a collision type for balls
+        self.shape.body.data = self
+        space.add(self.body, self.shape) # TODO Add collision handler
         
         # Load the image for the ball
         self.image = pygame.image.load("images/" + self.planet + ".png").convert_alpha()
@@ -121,9 +124,16 @@ class Ball:
         # Blit the new circle_surf onto the screen
         screen.blit(circle_surf, rect.topleft)
 
+    def delete(self, space):
+        # Remove the shape and body from the space
+        space.remove(self.shape, self.body)
+        if self in balls: # Might not want to reference balls here? Though it is a global var I think.
+            balls.remove(self)
+
+# Define balls list
 balls = [
-    Ball(position=(641, 380), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
-    Ball(position=(640, 360), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
+    Ball(position=(640, 300), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
+    Ball(position=(640, 500), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
 ]
 
 # Returns the position of a new ball
@@ -132,7 +142,44 @@ def spawn_new_ball(planet_index):
 
 current_ball = spawn_new_ball(0)
 
-# Define balls list
+# Set up collision handler and collision_callback function
+handler = space.add_collision_handler(1, 1)
+
+def ball_collision_handler(arbiter, space, data):
+    ball_shape1, ball_shape2 = arbiter.shapes
+
+    # Check if both shapes are balls and have the same radius
+    if ball_shape1.radius == ball_shape2.radius:
+
+        ball1 = ball_shape1.body.data
+        print(ball1)
+        print(vars(ball1))
+        ball2 = ball_shape2.body.data
+        print(ball2)
+        print(vars(ball2))
+
+        # Determine the lower ball's position
+        planetIndex = ball1.planetIndex
+        if planetIndex < len(planet_names)-1:
+
+            lower_ball = ball1 if ball1.body.position[1] < ball2.body.position[1] else ball2
+            new_position = lower_ball.body.position
+
+            # Create a new Ball instance at the position of the lower ball
+            new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
+            print("HERE")
+            print(new_ball)
+            print(vars(new_ball))
+            ball1.delete(space)
+            ball2.delete(space)
+            balls.append(new_ball)
+            
+
+            # Optionally, clean up the Ball instances if they are stored elsewhere
+            # ...
+
+    return True
+handler.begin = ball_collision_handler
 
 ball_dropping = False
 
@@ -157,6 +204,7 @@ while running:
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
        
     current_ball.draw(screen)
+    # print(current_ball.body.position)
     # Draw the balls
     for ball in balls:
         ball.draw(screen)
