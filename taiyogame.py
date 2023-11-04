@@ -131,10 +131,7 @@ class Ball:
             balls.remove(self)
 
 # Define balls list
-balls = [
-    Ball(position=(640, 300), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
-    Ball(position=(640, 500), mass=10, planetIndex=3, bodytype=pymunk.Body.DYNAMIC),
-]
+balls = []
 
 # Returns the position of a new ball
 def spawn_new_ball(planet_index):
@@ -156,7 +153,7 @@ def ball_collision_handler(arbiter, space, data):
 
         # Determine the lower ball's position
         planetIndex = ball1.planetIndex
-        if planetIndex < len(planet_names)-1:
+        if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type):
 
             lower_ball = ball1 if ball1.body.position[1] < ball2.body.position[1] else ball2
             new_position = lower_ball.body.position
@@ -176,6 +173,10 @@ handler.begin = ball_collision_handler
 
 ball_dropping = False
 
+# Frame counter for drop timing
+frame_count = 0
+current_frames = 90
+
 # Main loop
 running = True
 while running:
@@ -190,8 +191,7 @@ while running:
                 current_ball.body.moment = pymunk.moment_for_circle(1, 0, current_ball.radius, (0, 0))
                 space.reindex_shapes_for_body(current_ball.body)
                 balls.append(current_ball)
-                current_ball = spawn_new_ball(random.randint(0,4))
-                ball_dropping = False
+                current_frames = frame_count
 
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
@@ -238,21 +238,24 @@ while running:
             current_ball.body.position = pymunk.Vec2d(mouse[0], current_ball.body.position.y)
 
     # Ball dropping logic
-    if ball_dropping:
-        pass
+    if frame_count == current_frames - 1:
+        current_ball = spawn_new_ball(random.randint(0,4))
+        ball_dropping = False
+        current_frames = 90
 
     # End game condition
     pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
     # End game condition
-    # for ball in balls:
-    #     if ball.body.position.y - ball.radius < (box_y + 100):
-    #         print("GAME OVER")
-    #         time.sleep(5)
-    #         running = False
-    #         break
+    for ball in balls:
+        if (ball.body.position.y - ball.radius < (box_y + 20)) and not ball_dropping:
+            print("GAME OVER")
+            time.sleep(5)
+            running = False
+            break
     
     pygame.display.flip()
     dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
     space.step(dt)  # Step the simulation
+    frame_count = (frame_count + 1) % 50
 
 pygame.quit()
