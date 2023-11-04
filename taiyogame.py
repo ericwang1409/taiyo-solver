@@ -191,7 +191,10 @@ while running:
                 current_ball.body.moment = pymunk.moment_for_circle(1, 0, current_ball.radius, (0, 0))
                 space.reindex_shapes_for_body(current_ball.body)
                 balls.append(current_ball)
-                current_frames = frame_count
+                if frame_count == 0:
+                    current_frames = 1
+                else:
+                    current_frames = frame_count
 
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
@@ -256,5 +259,6 @@ while running:
     dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
     space.step(dt)  # Step the simulation
     frame_count = (frame_count + 1) % 50
+    print(frame_count)
 
 pygame.quit()
