@@ -153,7 +153,6 @@ while running:
                 current_ball = spawn_new_ball(random.randint(0,4))
                 ball_dropping = False
 
-
     screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
        
@@ -181,6 +180,9 @@ while running:
     score_box_center_x = (score_bottom_left[0] + score_top_right[0]) / 2
     score_box_center_y = (score_bottom_left[1] + score_top_left[1]) / 2
     score_rect.center = (score_box_center_x, score_box_center_y)
+
+    # Draw the score text onto the screen
+    screen.blit(score_text, score_rect.topleft)
 
     # Movement for the dropper-position ball
     keys = pygame.key.get_pressed()
