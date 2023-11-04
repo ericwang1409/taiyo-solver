@@ -93,7 +93,7 @@ while running:
             if event.button == 1 and not ball_dropping:
                 ball_dropping = True
 
-    screen.fill((255, 255, 255))  # Fill the screen with white background
+    screen.blit(background_image, (0, 0))   # Fill the screen with the background
     space.debug_draw(draw_options)  # Draw the space with the debug_draw util
 
     # Draw scoreboard
