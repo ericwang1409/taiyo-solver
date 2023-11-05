@@ -18,6 +18,7 @@ class Agent:
         self.memory = deque(maxlen=MAX_MEMORY)
         self.num_actions = 10
         self.model = Linear_QNet(226, 256, self.num_actions)
+        self.model.load("model/model.pth")
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self,game):
