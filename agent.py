@@ -17,7 +17,7 @@ class Agent:
         self.gamma = 0 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
         self.num_actions = 10
-        self.model = Linear_QNet(226, 256, self.num_actions)
+        self.model = Linear_QNet(226, 256, 128, 64, self.num_actions)
         self.model.load("model/model.pth")
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
@@ -39,7 +39,7 @@ class Agent:
         self.epsilon = 80 - self.n_games
         print(state)
         if random.randint(0, 200) < self.epsilon:
-            move = random.randint(0, 4)
+            move = random.randint(0, 10)
             # final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float)

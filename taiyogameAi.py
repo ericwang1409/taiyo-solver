@@ -189,7 +189,7 @@ class TaiyoGameAi:
                 ball2.delete(space, self.balls)
                 self.balls.append(new_ball)
 
-                self.score += 2*(planetIndex+1)
+                self.score += (planetIndex+1) + 6
 
         return True
     
@@ -210,7 +210,7 @@ class TaiyoGameAi:
                 self.current_frames = self.frame_count
     
     def run_game(self, moveMade=False, action=None):
-        physics_updates_per_frame = 200
+        physics_updates_per_frame = 5
     
         for _ in range(physics_updates_per_frame):
             space.step(1 / (50 * physics_updates_per_frame))
@@ -281,11 +281,11 @@ class TaiyoGameAi:
 
                 # returns for endgame
                 game_over = True
-                reward -= 10
+                reward -= 20
                 return reward, game_over, self.score, velocity_zero
         
         pygame.display.flip()
-        dt = clock.tick(1000) / 1000.0  # Update dt here (important for movement calculations)
+        dt = clock.tick(200) / 1000.0  # Update dt here (important for movement calculations)
         original_score = self.score
         space.step(dt)  # Step the simulation
         reward += (self.score - original_score)
