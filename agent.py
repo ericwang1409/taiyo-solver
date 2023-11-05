@@ -29,6 +29,8 @@ class Agent:
             i+=3
         state[-1] = game.current_ball.radius
 
+        return state
+
     def remember(self,state,action,reward,next_state,done):
         self.memory.append((state, action, reward, next_state, done))
 
@@ -82,7 +84,7 @@ def train():
             state_old = state_new
             if not just_started:
                 
-                #reward, done, score, velocity_zero = game.run_game(True,final_move)
+                reward, done, score, velocity_zero = game.run_game(True,final_move)
                 
                 # Train short memory
                 agent.train_short_term_memory(state_old, final_move, reward_since_action, state_new, done)
@@ -96,7 +98,7 @@ def train():
         if done:
             game.game_reset()
             agent.n_games += 1
-            agent.train_long_memory()
+            agent.train_long_term_memory()
 
             if score > record:
                 record = score

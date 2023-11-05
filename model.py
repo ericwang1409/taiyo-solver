@@ -41,7 +41,7 @@ class QTrainer:
         reward = torch.tensor(reward, dtype=torch.float)
 
         if len(state.shape) == 1:
-            state = torch.unqueeze(state, 0)
+            state = torch.unsqueeze(state, 0)
             next_state = torch.unsqueeze(next_state, 0)
             action = torch.unsqueeze(action, 0)
             reward = torch.unsqueeze(reward, 0)
