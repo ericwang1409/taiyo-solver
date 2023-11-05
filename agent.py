@@ -74,7 +74,6 @@ def train():
     just_started = True 
     done = False
     while True:
-        print(done)
         if not velocity_zero:
             reward, done, score, velocity_zero = game.run_game()
             reward_since_action += reward
@@ -112,6 +111,7 @@ def train():
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
             plot(plot_scores, plot_mean_scores)
+            velocity_zero = True
 
 if __name__ == '__main__':
     train()
