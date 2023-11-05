@@ -151,19 +151,43 @@ score = 0
 def show_game_over_screen():
     screen.fill((0, 0, 0))  # Fill the screen with black or any other color for the game over screen
 
-    # Display the score
-    font = pygame.font.Font(None, 74)
-    text = font.render(f'Game Over! Your Score: {score}', True, (255, 255, 255))
-    text_rect = text.get_rect(center=(WIDTH / 2, HEIGHT / 3))
-    screen.blit(text, text_rect)
+    # Load images
+    side_image_left = pygame.image.load('images/gameovertongue.png')
+    side_image_right = pygame.image.load('images/gameovertongue.png')
+
+    # Scale images if needed
+    side_image_left = pygame.transform.scale(side_image_left, (450, 450))
+    side_image_right = pygame.transform.scale(side_image_right, (450, 450))
+
+    # Calculate positions for the images
+    image_y_position = HEIGHT / 2
+    side_image_left_rect = side_image_left.get_rect(midright=(WIDTH / 2 - 200, image_y_position))
+    side_image_right_rect = side_image_right.get_rect(midleft=(WIDTH / 2 + 200, image_y_position))
+
+    # Display the images
+    screen.blit(side_image_left, side_image_left_rect.topleft)
+    screen.blit(side_image_right, side_image_right_rect.topleft)
+
+    # Display the score in a more prominent way
+    score_font = pygame.font.Font(None, 100)  # Bigger font size for the score
+    score_text = score_font.render(f'Score: {score}', True, (255, 255, 255)) 
+    score_text_rect = score_text.get_rect(center=(WIDTH / 2, HEIGHT / 3))
+    screen.blit(score_text, score_text_rect)
+
+    # Display "Game Over!" text above the score
+    game_over_font = pygame.font.Font(None, 74)
+    game_over_text = game_over_font.render('Game Over!', True, (255, 255, 255))
+    game_over_text_rect = game_over_text.get_rect(center=(WIDTH / 2, score_text_rect.top - 60))  # Position above score
+    screen.blit(game_over_text, game_over_text_rect)
 
     # Draw the replay button
-    button_color = (0, 255, 0)  # Green color
-    button_rect = pygame.Rect(WIDTH / 2 - 100, HEIGHT / 2, 200, 60)  # Create a rect for the button
-    pygame.draw.rect(screen, button_color, button_rect)  # Draw the button
+    button_color = (22, 20, 196) 
+    button_rect = pygame.Rect(WIDTH / 2 - 100, score_text_rect.bottom + 40, 200, 60)  # Positioned below the score
+    pygame.draw.rect(screen, button_color, button_rect)
 
     # Button text
-    button_text = font.render('Replay', True, (0, 0, 0))
+    button_font = pygame.font.Font(None, 74)  # Consistent font size with "Game Over"
+    button_text = button_font.render('Replay', True, (0, 0, 0))
     button_text_rect = button_text.get_rect(center=button_rect.center)
     screen.blit(button_text, button_text_rect)
 
@@ -180,6 +204,7 @@ def show_game_over_screen():
                 mouse_pos = event.pos
                 if button_rect.collidepoint(mouse_pos):
                     waiting = False
+
 
 # State clear (for starting new game instance)
 def clear_balls(space, balls, current_ball):
@@ -302,7 +327,7 @@ while running:
 
     # End game conditions
     for ball in balls:
-        if (ball.body.position.y - ball.radius < (box_y + 50)) and not ball_dropping:
+        if (ball.body.position.y - ball.radius < (box_y + 100)) and not ball_dropping:
             pygame.draw.line(screen, "white", (box_x, box_y + 10), (box_x + box_width, box_y + 10), 2)
         if (ball.body.position.y - ball.radius < (box_y + 10)) and not ball_dropping:
             for ball in balls:
