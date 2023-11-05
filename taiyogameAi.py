@@ -215,10 +215,9 @@ class TaiyoGameAi:
                 pygame.quit()
                 quit()
         
-        originalScore = self.score
-
         # if everything is settled and the agent makes a move then we step (dropping ball)
         if moveMade:
+            
             self.agent_step(action)
 
         screen.blit(background_image, (0, 0))   # Fill the screen with the background
@@ -255,8 +254,17 @@ class TaiyoGameAi:
             self.current_frames = 90
 
         # reward is difference in scores
-        reward = 10 * (self.score - originalScore)
+        reward = 0
         game_over = False
+        velocity_zero = False
+
+        # Check if all balls are at rest
+        for ball in self.balls:
+            if ball.body.velocity.length > 2:
+                velocity_zero = False
+                break
+            else:
+                velocity_zero = True
 
         # End game conditions
         for ball in self.balls:
@@ -269,14 +277,16 @@ class TaiyoGameAi:
                 # returns for endgame
                 game_over = True
                 reward -= 10
-                return reward, game_over, self.score
+                return reward, game_over, self.score, velocity_zero
         
         pygame.display.flip()
         dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
+        original_score = self.score
         space.step(dt)  # Step the simulation
+        reward += (self.score - original_score)
         self.frame_count = (self.frame_count + 1) % 50
 
-        return reward, game_over, self.score
+        return reward, game_over, self.score, velocity_zero
 
 
 # if __name__ == '__main__':
