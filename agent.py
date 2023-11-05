@@ -16,7 +16,7 @@ class Agent:
         self.epsilon = 0 # randomness
         self.gamma = 0 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.num_actions = 5
+        self.num_actions = 10
         self.model = Linear_QNet(226, 256, self.num_actions)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
@@ -74,7 +74,7 @@ def train():
     just_started = True 
     done = False
     while True:
-
+        
         if not velocity_zero:
             reward, done, score, velocity_zero = game.run_game()
             reward_since_action += reward
@@ -107,11 +107,11 @@ def train():
             print('Game', agent.n_games, 'Score', score, 'Record:', record)
 
             # plotting stuff if we want
-            plot_scores.append(score)
-            total_score += score
-            mean_score = total_score / agent.n_games
-            plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
+            # plot_scores.append(score)
+            # total_score += score
+            # mean_score = total_score / agent.n_games
+            # plot_mean_scores.append(mean_score)
+            # plot(plot_scores, plot_mean_scores)
 
 if __name__ == '__main__':
     train()
