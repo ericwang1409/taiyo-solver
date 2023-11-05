@@ -97,7 +97,7 @@ class Ball:
         
     def update(self, dt):
         # The physical position will be updated by the Pymunk space.step() method
-        self.body.angular_velocity *= 0.9
+        self.body.angular_velocity *= 0
     
     def draw(self, screen):
         # Get the position for Pygame (adjust for the coordinate system if needed)
@@ -189,7 +189,7 @@ class TaiyoGameAi:
                 ball2.delete(space, self.balls)
                 self.balls.append(new_ball)
 
-                self.score += (planetIndex+1) + 6
+                self.score += 2*(planetIndex+1)
 
         return True
     
