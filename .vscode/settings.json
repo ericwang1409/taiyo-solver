@@ -1,0 +1,8 @@
+{
+    "python.pythonPath": "/Users/eric3/miniconda3/envs/suikagame/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.condaPath": "/Users/eric3/miniconda3/bin/conda",
+    "files.exclude": {
+        "**/.vscode": true
+    },
+}
