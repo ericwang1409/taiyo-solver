@@ -136,6 +136,7 @@ class TaiyoGameAi:
     def __init__(self):
         self.current_ball = self.spawn_new_ball(0)
         self.score = 0
+        self.score_proxy = 0
         self.balls = []
         self.frame_count = 0
         self.current_frames = 90
@@ -150,6 +151,7 @@ class TaiyoGameAi:
 
     def game_reset(self):
         self.score = 0
+        self.score_proxy = 0
 
         # remove balls
         if self.current_ball in self.balls:
@@ -189,7 +191,8 @@ class TaiyoGameAi:
                 ball2.delete(space, self.balls)
                 self.balls.append(new_ball)
 
-                self.score += (planetIndex+1) + 6
+                self.score += 2*(planetIndex+1)
+                self.score_proxy += (planetIndex+1) + 4
 
         return True
     
@@ -286,9 +289,9 @@ class TaiyoGameAi:
         
         pygame.display.flip()
         dt = clock.tick(200) / 1000.0  # Update dt here (important for movement calculations)
-        original_score = self.score
+        original_score = self.score_proxy
         space.step(dt)  # Step the simulation
-        reward += (self.score - original_score)
+        reward += (self.score_proxy - original_score)
         self.frame_count = (self.frame_count + 1) % 50
 
         return reward, game_over, self.score, velocity_zero
