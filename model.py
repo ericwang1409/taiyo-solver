@@ -1,8 +1,12 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import os
+import torch_xla
+import torch_xla.core.xla_model as xm
+import torch_xla.distributed.parallel_loader as pl
+import torch_xla.distributed.xla_multiprocessing as xmp
 
 class Linear_QNet(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -21,7 +25,7 @@ class Linear_QNet(nn.Module):
             os.makedirs(model_folder_path)
 
         file_name = os.path.join(model_folder_path, file_name)
-        torch.save(self.state_dict(), file_name)
+        xm.save(self.state_dict(), file_name) if xm.is_master_ordinal() else None
 
 
 class QTrainer:
@@ -30,15 +34,15 @@ class QTrainer:
         self.gamma = gamma
         self.model = model
         # can choose optimizer
-        self.optimizer = optim.Adam(model.parameter(), lr=self.lr)
+        self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
 
     def train_step(self, state, action, reward, next_state, done):
         # TODO include some imports (QNet etc, timestamp 1:20:40) in the agent.py file
-        state = torch.tensor(state, dtype=torch.float)
-        next_state = torch.tensor(next_state, dtype=torch.float)
-        action = torch.tensor(action, dtype=torch.long)
-        reward = torch.tensor(reward, dtype=torch.float)
+        state = torch.tensor(state, dtype=torch.float).to(xm.xla_device())
+        next_state = torch.tensor(next_state, dtype=torch.float).to(xm.xla_device())
+        action = torch.tensor(action, dtype=torch.long).to(xm.xla_device())
+        reward = torch.tensor(reward, dtype=torch.float).to(xm.xla_device())
 
         if len(state.shape) == 1:
             state = torch.unqueeze(state, 0)
@@ -62,7 +66,23 @@ class QTrainer:
         loss = self.criterion(trgt, pred)
         loss.backward()
 
-        self.optimizer.step()
+        xm.optimizer_step(self.optimizer, barrier=True)
+
+        # Assuming you have some data to train your model, 
+    # you would put your training loop here and make sure to load data to the TPU device
+    # ...
+
+    # Example training loop skeleton for TPU:
+    def train_model():
+        # Your training loop here
+        pass
+
+    def _mp_fn(rank, flags):
+        torch.set_default_tensor_type('torch.FloatTensor')
+        train_model()
+
+        FLAGS = {}
+        xmp.spawn(_mp_fn, args=(FLAGS,), nprocs=8, start_method='fork')
 
 
 
