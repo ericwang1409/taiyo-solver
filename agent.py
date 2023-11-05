@@ -74,7 +74,7 @@ def train():
     just_started = True 
     done = False
     while True:
-
+        print(done)
         if not velocity_zero:
             reward, done, score, velocity_zero = game.run_game()
             reward_since_action += reward
