@@ -16,7 +16,7 @@ class Agent:
         self.epsilon = 0 # randomness
         self.gamma = 0 # discount
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.num_actions = 5
+        self.num_actions = 10
         self.model = Linear_QNet(226, 256, self.num_actions)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 

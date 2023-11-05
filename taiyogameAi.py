@@ -210,6 +210,11 @@ class TaiyoGameAi:
                 self.current_frames = self.frame_count
     
     def run_game(self, moveMade=False, action=None):
+        physics_updates_per_frame = 5
+    
+        for _ in range(physics_updates_per_frame):
+            space.step(1 / (50 * physics_updates_per_frame))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -280,7 +285,7 @@ class TaiyoGameAi:
                 return reward, game_over, self.score, velocity_zero
         
         pygame.display.flip()
-        dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
+        dt = clock.tick(240) / 1000.0  # Update dt here (important for movement calculations)
         original_score = self.score
         space.step(dt)  # Step the simulation
         reward += (self.score - original_score)
