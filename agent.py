@@ -47,7 +47,7 @@ class Agent:
             move = torch.argmax(prediction).item()
             # final_move[move] = 1
 
-        return 484 + int(move*((800-484)/self.num_actions))
+        return 484 + int(random.randint(0,10)*((800-484)/self.num_actions))
 
     def train_long_term_memory(self):
         if len(self.memory) > BATCH_SIZE:
