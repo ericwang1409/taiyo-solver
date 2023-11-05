@@ -13,7 +13,7 @@ dt = 0
 
 WIDTH = screen.get_width()
 HEIGHT = screen.get_height()
-BALL_RADIUS=40
+BALL_RADIUS = 40
 
 # Background image
 background_image = pygame.image.load("images/background.jpg").convert()
@@ -59,11 +59,6 @@ ball_radii = [box_width / 26.96, box_width / 18.78, box_width / 13.19, box_width
 scale_factors = [2.4, 2.9, 2.4, 2.4, 2.4, 2.7, 2.9, 3, 2.2, 3, 4]
 planet_names=['pluto','moon','mercury','mars','venus','earth','neptune','uranus','saturn','jupiter','sun']
 
-# ball image
-radius = 20
-ball_image = pygame.image.load('images/sun.png')
-ball_image = pygame.transform.scale(ball_image, (radius * 2, radius * 2))  # The image is scaled to 2x the radius of the ball
-
 # Create static lines to form a U-shape
 static_lines = [
     pymunk.Segment(space.static_body, bottom_left, top_left, 3),
@@ -102,7 +97,7 @@ class Ball:
         
     def update(self, dt):
         # The physical position will be updated by the Pymunk space.step() method
-        ball.body.angular_velocity *= 0.9
+        self.body.angular_velocity *= 0.9
     
     def draw(self, screen):
         # Get the position for Pygame (adjust for the coordinate system if needed)
@@ -130,141 +125,157 @@ class Ball:
         # Blit the new circle_surf onto the screen
         screen.blit(circle_surf, rect.topleft)
 
-    def delete(self, space):
+    def delete(self, space, balls):
         # Remove the shape and body from the space
         space.remove(self.shape, self.body)
         if self in balls: # Might not want to reference balls here? Though it is a global var I think.
             balls.remove(self)
 
-# Define balls list
-balls = []
 
-# Returns the position of a new ball
-def spawn_new_ball(planet_index):
-    return Ball(position=(640,50), mass=1, planetIndex=planet_index)          #Ball(position=(WIDTH / 2, box_y - ball_radii[planet_index]), mass=1, planetIndex=planet_index)
+class TaiyoGameAi:
+    def __init__(self):
+        self.current_ball = self.spawn_new_ball(0)
+        self.score = 0
+        self.balls = []
+        self.frame_count = 0
+        self.current_frames = 90
+        self.handler = space.add_collision_handler(1, 1)
+        self.handler.begin = self.ball_collision_handler
+        self.ball_dropping = False
 
-current_ball = spawn_new_ball(0)
 
-score = 0
+    def spawn_new_ball(self, planet_index):
+        return Ball(position=(640,50), mass=1, planetIndex=planet_index)
 
-# Set up collision handler and collision_callback function
-handler = space.add_collision_handler(1, 1)
 
-def ball_collision_handler(arbiter, space, data):
-    global score
-    ball_shape1, ball_shape2 = arbiter.shapes
+    def game_reset(self):
+        self.score = 0
 
-    # Check if both shapes are balls and have the same radius
-    if ball_shape1.radius == ball_shape2.radius:
+        # remove balls
+        if self.current_ball in self.balls:
+            self.balls.remove(self.current_ball)
+        if self.current_ball.shape in space.shapes:
+            space.remove(self.current_ball.shape, self.current_ball.body)
+        for ball in self.balls:
+            # Remove the shape and body from the space
+            space.remove(ball.shape, ball.body)
+        self.balls.clear()
 
-        ball1 = ball_shape1.body.data
-        ball2 = ball_shape2.body.data
+        self.current_ball = self.spawn_new_ball(0)
+        self.frame_count = 1
+        self.current_frames = 90
+        self.ball_dropping = False
 
-        # Determine the lower ball's position
-        planetIndex = ball1.planetIndex
-        if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type):
 
-            lower_ball = ball1 if ball1.body.position[1] < ball2.body.position[1] else ball2
-            new_position = lower_ball.body.position
+    def ball_collision_handler(self, arbiter, space, data):
+        ball_shape1, ball_shape2 = arbiter.shapes
 
-            # Create a new Ball instance at the position of the lower ball
-            new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
-            ball1.delete(space)
-            ball2.delete(space)
-            balls.append(new_ball)
+        # Check if both shapes are balls and have the same radius
+        if ball_shape1.radius == ball_shape2.radius:
 
-            score += 2*(planetIndex+1)
+            ball1 = ball_shape1.body.data
+            ball2 = ball_shape2.body.data
 
-    return True
-handler.begin = ball_collision_handler
+            # Determine the lower ball's position
+            planetIndex = ball1.planetIndex
+            if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type):
 
-ball_dropping = False
+                lower_ball = ball1 if ball1.body.position[1] < ball2.body.position[1] else ball2
+                new_position = lower_ball.body.position
 
-# Frame counter for drop timing
-frame_count = 0
-current_frames = 90
+                # Create a new Ball instance at the position of the lower ball
+                new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
+                ball1.delete(space, self.balls)
+                ball2.delete(space, self.balls)
+                self.balls.append(new_ball)
 
-# Main loop
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
-            if not ball_dropping and current_ball.body.body_type == pymunk.Body.KINEMATIC:
-                ball_dropping = True
-                current_ball.body.body_type = pymunk.Body.DYNAMIC
-                current_ball.body.mass = 1
-                current_ball.body.moment = pymunk.moment_for_circle(1, 0, current_ball.radius, (0, 0))
-                space.reindex_shapes_for_body(current_ball.body)
-                balls.append(current_ball)
-                if frame_count == 0:
-                    frame_count = 1
-                    current_frames = 1
-                else:
-                    current_frames = frame_count
+                self.score += 2*(planetIndex+1)
 
-    screen.blit(background_image, (0, 0))   # Fill the screen with the background
-    screen.blit(side_image, side_image_position)  # Draw the side image
-    space.debug_draw(draw_options)  # Draw the space with the debug_draw util
-       
-    current_ball.draw(screen)
-    # print(current_ball.body.position)
-    # Draw the balls
-    for ball in balls:
-        ball.draw(screen)
-        ball.update(1 / 50.0)
-
-    # Draw scoreboard
-    # Position scoreboard boundaries
-    # TODO Put an image there
-    # Place score centered in box
-    pygame.draw.line(screen, "white", score_bottom_left, score_bottom_right, 4)
-    pygame.draw.line(screen, "white", score_bottom_left, score_top_left, 4)
-    pygame.draw.line(screen, "white", score_bottom_right, score_top_right, 4)
-    pygame.draw.line(screen, "white", score_top_left, score_top_right, 4)
-    font_size = 30
-    font = pygame.font.Font(None,font_size)
-    score_text = font.render(str(score), True, pygame.Color('white'))
-    score_rect = score_text.get_rect()
-
-    # Calculate the center position
-    score_box_center_x = (score_bottom_left[0] + score_top_right[0]) / 2
-    score_box_center_y = (score_bottom_left[1] + score_top_left[1]) / 2
-    score_rect.center = (score_box_center_x, score_box_center_y)
-
-    # Draw the score text onto the screen
-    screen.blit(score_text, score_rect.topleft)
-
-    # Movement for the dropper-position ball
-    keys = pygame.key.get_pressed()
-    mouse = pygame.mouse.get_pos()
-
-    if not ball_dropping and current_ball.body.body_type == pymunk.Body.KINEMATIC:
-        if keys[pygame.K_a]:
-            current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x - (300 * dt), current_ball.body.position.y)
-        if keys[pygame.K_d]:
-            current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x + (300 * dt), current_ball.body.position.y)
-        if (box_x) < mouse[0] < (box_x + box_width) and current_ball.body.body_type == pymunk.Body.KINEMATIC:
-            current_ball.body.position = pymunk.Vec2d(mouse[0], current_ball.body.position.y)
-
-    # Ball dropping logic
-    if frame_count == current_frames - 1:
-        current_ball = spawn_new_ball(random.randint(0,4))
-        ball_dropping = False
-        current_frames = 90
-
-    # End game condition
-    pygame.draw.line(screen, "white", (box_x, box_y + 20), (box_x + box_width, box_y + 20), 2)
-    for ball in balls:
-        if (ball.body.position.y - ball.radius < (box_y + 20)) and not ball_dropping:
-            print("GAME OVER")
-            game_over = True
-            break
+        return True
     
-    pygame.display.flip()
-    dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
-    space.step(dt)  # Step the simulation
-    frame_count = (frame_count + 1) % 50
+    def play_step(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+                if not self.ball_dropping and self.current_ball.body.body_type == pymunk.Body.KINEMATIC:
+                    self.ball_dropping = True
+                    self.current_ball.body.body_type = pymunk.Body.DYNAMIC
+                    self.current_ball.body.mass = 1
+                    self.current_ball.body.moment = pymunk.moment_for_circle(1, 0, self.current_ball.radius, (0, 0))
+                    space.reindex_shapes_for_body(self.current_ball.body)
+                    self.balls.append(self.current_ball)
+                    if self.frame_count == 0:
+                        self.frame_count = 1
+                        self.current_frames = 1
+                    else:
+                        self.current_frames = self.frame_count
 
-pygame.quit()
+        screen.blit(background_image, (0, 0))   # Fill the screen with the background
+        screen.blit(side_image, side_image_position)  # Draw the side image
+        space.debug_draw(draw_options)  # Draw the space with the debug_draw util
+
+        self.current_ball.draw(screen)
+        # print(current_ball.body.position)
+        # Draw the balls
+        for ball in self.balls:
+            ball.draw(screen)
+            ball.update(1 / 50.0)
+
+        
+        pygame.draw.line(screen, "white", score_bottom_left, score_bottom_right, 4)
+        pygame.draw.line(screen, "white", score_bottom_left, score_top_left, 4)
+        pygame.draw.line(screen, "white", score_bottom_right, score_top_right, 4)
+        pygame.draw.line(screen, "white", score_top_left, score_top_right, 4)
+        font_size = 50
+        font = pygame.font.Font(None,font_size)
+        score_text = font.render(str(self.score), True, pygame.Color(143, 64, 225))
+        score_rect = score_text.get_rect()
+
+        # Calculate the center position
+        score_box_center_x = (score_bottom_left[0] + score_top_right[0]) / 2
+        score_box_center_y = (score_bottom_left[1] + score_top_left[1]) / 2
+        score_rect.center = (score_box_center_x, score_box_center_y)
+
+        # Draw the score text onto the screen
+        screen.blit(score_text, score_rect.topleft)
+
+        # Movement for the dropper-position ball
+        keys = pygame.key.get_pressed()
+        mouse = pygame.mouse.get_pos()
+        print(mouse[0])
+
+        if not self.ball_dropping and self.current_ball.body.body_type == pymunk.Body.KINEMATIC:
+            # balls follow mouse
+            if (box_x) < mouse[0] < (box_x + box_width) and self.current_ball.body.body_type == pymunk.Body.KINEMATIC:
+                self.current_ball.body.position = pymunk.Vec2d(mouse[0], self.current_ball.body.position.y)
+
+        # Spawn new ball after dropping
+        if self.frame_count == self.current_frames - 1:
+            self.current_ball = self.spawn_new_ball(random.randint(0,4))
+            self.ball_dropping = False
+            self.current_frames = 90
+
+        # End game conditions
+        for ball in self.balls:
+            if (ball.body.position.y - ball.radius < (box_y + 100)) and not self.ball_dropping:
+                pygame.draw.line(screen, "white", (box_x, box_y + 10), (box_x + box_width, box_y + 10), 2)
+            if (ball.body.position.y - ball.radius < (box_y + 10)) and not self.ball_dropping:
+                for ball in self.balls:
+                    self.score += ball.planetIndex
+                self.game_reset()
+        
+        pygame.display.flip()
+        dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
+        space.step(dt)  # Step the simulation
+        self.frame_count = (self.frame_count + 1) % 50
+
+
+if __name__ == '__main__':
+    game = TaiyoGameAi()
+    
+    # game loop
+    while True:
+        game.play_step()
+    

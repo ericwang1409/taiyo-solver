@@ -59,10 +59,6 @@ ball_radii = [box_width / 26.96, box_width / 18.78, box_width / 13.19, box_width
 scale_factors = [2.4, 2.9, 2.4, 2.4, 2.4, 2.7, 2.9, 3, 2.2, 3, 4]
 planet_names=['pluto','moon','mercury','mars','venus','earth','neptune','uranus','saturn','jupiter','sun']
 
-# ball image
-radius = 20
-ball_image = pygame.image.load('images/sun.png')
-ball_image = pygame.transform.scale(ball_image, (radius * 2, radius * 2))  # The image is scaled to 2x the radius of the ball
 
 # Create static lines to form a U-shape
 static_lines = [
@@ -102,7 +98,7 @@ class Ball:
         
     def update(self, dt):
         # The physical position will be updated by the Pymunk space.step() method
-        ball.body.angular_velocity *= 0.9
+        self.body.angular_velocity *= 0.9
     
     def draw(self, screen):
         # Get the position for Pygame (adjust for the coordinate system if needed)
