@@ -5,17 +5,27 @@ import torch.nn.functional as F
 import os
 
 class Linear_QNet(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_sizes, output_size):
         super().__init__()
-        self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, output_size)
+
+        # Create a list of all sizes for the layers
+        all_sizes = [input_size] + hidden_sizes + [output_size]
+        
+        # Create the linear layers using list comprehension
+        self.layers = nn.ModuleList([
+            nn.Linear(all_sizes[i], all_sizes[i + 1])
+            for i in range(len(all_sizes) - 1)
+        ])
 
     def forward(self, x):
-        x = F.relu(self.linear1(x))
-        x = self.linear2(x)
+        # Pass input through each layer except for the last one
+        for layer in self.layers[:-1]:
+            x = F.relu(layer(x))
+        # No activation after the last layer
+        x = self.layers[-1](x)
         return x
     
-    def save(self, file_name="model.pth"):
+    def save(self, file_name="model2.pth"):
         model_folder_path = './model'
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)

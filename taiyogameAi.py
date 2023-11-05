@@ -210,7 +210,7 @@ class TaiyoGameAi:
                 self.current_frames = self.frame_count
     
     def run_game(self, moveMade=False, action=None):
-        physics_updates_per_frame = 200
+        physics_updates_per_frame = 50
     
         for _ in range(physics_updates_per_frame):
             space.step(1 / (50 * physics_updates_per_frame))
