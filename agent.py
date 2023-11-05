@@ -34,6 +34,7 @@ class Agent:
 
     def get_action(self, state):
         self.epsilon = 80 - self.n_games
+        print(state)
         if random.randint(0, 200) < self.epsilon:
             move = random.randint(0, 4)
             # final_move[move] = 1
@@ -69,6 +70,7 @@ def train():
     state_old = agent.get_state(game)
     velocity_zero = True
     just_started = True 
+    done = False
     while True:
 
         if not velocity_zero:
@@ -80,10 +82,10 @@ def train():
             state_old = state_new
             if not just_started:
                 
-                game.run_game(True,final_move)
+                #reward, done, score, velocity_zero = game.run_game(True,final_move)
                 
                 # Train short memory
-                agent.train_short_memory(state_old, final_move, reward_since_action, state_new, done)
+                agent.train_short_term_memory(state_old, final_move, reward_since_action, state_new, done)
 
                 # remember
                 agent.remember(state_old, final_move, reward_since_action, state_new, done)
