@@ -29,11 +29,14 @@ class Agent:
             i+=3
         state[-1] = game.current_ball.radius
 
+        return state
+
     def remember(self,state,action,reward,next_state,done):
         self.memory.append((state, action, reward, next_state, done))
 
     def get_action(self, state):
         self.epsilon = 80 - self.n_games
+        print(state)
         if random.randint(0, 200) < self.epsilon:
             move = random.randint(0, 4)
             # final_move[move] = 1
@@ -67,6 +70,9 @@ def train():
     game = TaiyoGameAi()
 
     state_old = agent.get_state(game)
+    velocity_zero = True
+    just_started = True 
+    done = False
     while True:
 
         if not velocity_zero:
@@ -76,21 +82,23 @@ def train():
             state_new = agent.get_state(game)
             final_move = agent.get_action(state_old)
             state_old = state_new
-            game.run_game(True,final_move)
-            
-            # Train short memory
-            agent.train_short_memory(state_old, final_move, reward_since_action, state_new, done)
+            if not just_started:
+                
+                reward, done, score, velocity_zero = game.run_game(True,final_move)
+                
+                # Train short memory
+                agent.train_short_term_memory(state_old, final_move, reward_since_action, state_new, done)
 
-            # remember
-            agent.remember(state_old, final_move, reward_since_action, state_new, done)
+                # remember
+                agent.remember(state_old, final_move, reward_since_action, state_new, done)
 
-            reward_since_action = 0
-
+                reward_since_action = 0
+            just_started = False
         # restart if done
         if done:
             game.game_reset()
             agent.n_games += 1
-            agent.train_long_memory()
+            agent.train_long_term_memory()
 
             if score > record:
                 record = score

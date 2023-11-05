@@ -30,7 +30,7 @@ class QTrainer:
         self.gamma = gamma
         self.model = model
         # can choose optimizer
-        self.optimizer = optim.Adam(model.parameter(), lr=self.lr)
+        self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
 
     def train_step(self, state, action, reward, next_state, done):
@@ -41,7 +41,7 @@ class QTrainer:
         reward = torch.tensor(reward, dtype=torch.float)
 
         if len(state.shape) == 1:
-            state = torch.unqueeze(state, 0)
+            state = torch.unsqueeze(state, 0)
             next_state = torch.unsqueeze(next_state, 0)
             action = torch.unsqueeze(action, 0)
             reward = torch.unsqueeze(reward, 0)
