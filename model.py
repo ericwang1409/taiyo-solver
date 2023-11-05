@@ -23,6 +23,13 @@ class Linear_QNet(nn.Module):
         file_name = os.path.join(model_folder_path, file_name)
         torch.save(self.state_dict(), file_name)
 
+    def load(self, file_name):
+        if os.path.isfile(file_name):
+            self.load_state_dict(torch.load(file_name))
+            self.eval()  # Set the model to evaluation mode
+        else:
+            print(f"Error: No model found at {file_name}")
+
 
 class QTrainer:
     def __init__(self, model, lr, gamma):
