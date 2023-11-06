@@ -319,7 +319,7 @@ while running:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x - (300 * dt), current_ball.body.position.y)
         if keys[pygame.K_d]:
             current_ball.body.position = pymunk.Vec2d(current_ball.body.position.x + (300 * dt), current_ball.body.position.y)
-        if (box_x) < mouse[0] < (box_x + box_width) and current_ball.body.body_type == pymunk.Body.KINEMATIC:
+        if (box_x + current_ball.radius) < mouse[0] < (box_x + box_width - current_ball.radius) and current_ball.body.body_type == pymunk.Body.KINEMATIC:
             current_ball.body.position = pymunk.Vec2d(mouse[0], current_ball.body.position.y)
 
     # Ball dropping logic
