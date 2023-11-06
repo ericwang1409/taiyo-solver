@@ -238,13 +238,13 @@ def ball_collision_handler(arbiter, space, data):
         planetIndex = ball1.planetIndex
         if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type):
 
-            lower_ball = ball1 if ball1.body.position[1] < ball2.body.position[1] else ball2
+            lower_ball = ball1 if ball1.body.position[1] > ball2.body.position[1] else ball2
             new_position = lower_ball.body.position
 
             # Create a new Ball instance at the position of the lower ball
-            new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
             ball1.delete(space)
             ball2.delete(space)
+            new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
             balls.append(new_ball)
 
             score += 2*(planetIndex+1)
