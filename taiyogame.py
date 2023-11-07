@@ -145,6 +145,7 @@ score = 0
 
 # Full game reset function
 def game_reset(space, balls, current_ball):
+    global score
     score = 0
     clear_balls(space, balls, current_ball)
     current_ball = spawn_new_ball(0)
@@ -224,8 +225,10 @@ def clear_balls(space, balls, current_ball):
 # Set up collision handler and collision_callback function
 handler = space.add_collision_handler(1, 1)
 
+checkedThisFrame = False
+
 def ball_collision_handler(arbiter, space, data):
-    global score
+    global score, checkedThisFrame
     ball_shape1, ball_shape2 = arbiter.shapes
 
     # Check if both shapes are balls and have the same radius
@@ -236,7 +239,7 @@ def ball_collision_handler(arbiter, space, data):
 
         # Determine the lower ball's position
         planetIndex = ball1.planetIndex
-        if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type):
+        if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type) and not checkedThisFrame:
 
             lower_ball = ball1 if ball1.body.position[1] > ball2.body.position[1] else ball2
             new_position = lower_ball.body.position
@@ -249,6 +252,8 @@ def ball_collision_handler(arbiter, space, data):
 
             score += 2*(planetIndex+1)
 
+            checkedThisFrame = True
+
     return True
 handler.begin = ball_collision_handler
 
@@ -256,7 +261,7 @@ ball_dropping = False
 
 # Frame counter for drop timing
 frame_count = 0
-current_frames = 90
+current_frames = 130
 
 # Main loop
 running = True
@@ -326,7 +331,7 @@ while running:
     if frame_count == current_frames - 1:
         current_ball = spawn_new_ball(random.randint(0,4))
         ball_dropping = False
-        current_frames = 90
+        current_frames = 130
 
     # End game conditions
     for ball in balls:
@@ -343,5 +348,6 @@ while running:
     dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
     space.step(dt)  # Step the simulation
     frame_count = (frame_count + 1) % 50
+    checkedThisFrame = False
 
 pygame.quit()

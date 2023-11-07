@@ -142,6 +142,7 @@ class TaiyoGameAi:
         self.handler = space.add_collision_handler(1, 1)
         self.handler.begin = self.ball_collision_handler
         self.ball_dropping = False
+        self.collisionChecked = False
 
 
     def spawn_new_ball(self, planet_index):
@@ -178,9 +179,9 @@ class TaiyoGameAi:
 
             # Determine the lower ball's position
             planetIndex = ball1.planetIndex
-            if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type):
+            if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type) and not self.collisionChecked:
 
-                lower_ball = ball1 if ball1.body.position[1] < ball2.body.position[1] else ball2
+                lower_ball = ball1 if ball1.body.position[1] > ball2.body.position[1] else ball2
                 new_position = lower_ball.body.position
 
                 # Create a new Ball instance at the position of the lower ball
@@ -190,6 +191,7 @@ class TaiyoGameAi:
                 self.balls.append(new_ball)
 
                 self.score += 2*(planetIndex+1)
+                self.collisionChecked = True
 
         return True
     
@@ -290,6 +292,7 @@ class TaiyoGameAi:
         space.step(dt)  # Step the simulation
         reward += (self.score - original_score)
         self.frame_count = (self.frame_count + 1) % 50
+        self.collisionChecked = False
 
         return reward, game_over, self.score, velocity_zero
 
