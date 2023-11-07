@@ -179,7 +179,7 @@ def show_game_over_screen():
 
     # Display "Game Over!" text above the score
     game_over_font = pygame.font.Font(None, 74)
-    game_over_text = game_over_font.render('Game Over!', True, (255, 255, 255))
+    game_over_text = game_over_font.render('Game over! Gēmuōbā!', True, (255, 255, 255))
     game_over_text_rect = game_over_text.get_rect(center=(WIDTH / 2, score_text_rect.top - 60))  # Position above score
     screen.blit(game_over_text, game_over_text_rect)
 
