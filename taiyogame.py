@@ -143,13 +143,6 @@ current_ball = spawn_new_ball(0)
 
 score = 0
 
-# Full game reset function
-def game_reset(space, balls, current_ball):
-    score = 0
-    clear_balls(space, balls, current_ball)
-    current_ball = spawn_new_ball(0)
-    frame_count = 1
-
 # Game over screen function
 def show_game_over_screen():
     screen.fill((0, 0, 0))  # Fill the screen with black or any other color for the game over screen
@@ -220,6 +213,13 @@ def clear_balls(space, balls, current_ball):
         # Remove the shape and body from the space
         space.remove(ball.shape, ball.body)
     balls.clear() 
+
+# Full game reset function
+def game_reset(space, balls, current_ball):
+    score = 0
+    clear_balls(space, balls, current_ball)
+    current_ball = spawn_new_ball(0)
+    frame_count = 1
 
 # Set up collision handler and collision_callback function
 handler = space.add_collision_handler(1, 1)
