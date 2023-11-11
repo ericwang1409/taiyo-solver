@@ -242,9 +242,9 @@ def ball_collision_handler(arbiter, space, data):
             new_position = lower_ball.body.position
 
             # Create a new Ball instance at the position of the lower ball
+            new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
             ball1.delete(space)
             ball2.delete(space)
-            new_ball = Ball(new_position, 10, planetIndex+1, bodytype=pymunk.Body.DYNAMIC)
             balls.append(new_ball)
 
             score += 2*(planetIndex+1)
