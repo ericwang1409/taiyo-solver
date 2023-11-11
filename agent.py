@@ -139,15 +139,15 @@ def train():
 
             print('Game', agent.n_games, 'Score', score, 'Record:', record)
 
-            if agent.n_games % 1 == 0:
-                plot_differences(height_differences)
+            # if agent.n_games % 1 == 0:
+            #     plot_differences(height_differences)
             
             # plotting stuff if we want
-            # plot_scores.append(score)
-            # total_score += score
-            # mean_score = total_score / agent.n_games
-            # plot_mean_scores.append(mean_score)
-            # plot(plot_scores, plot_mean_scores)
+            plot_scores.append(score)
+            total_score += score
+            mean_score = total_score / agent.n_games
+            plot_mean_scores.append(mean_score)
+            plot(plot_scores, plot_mean_scores)
             velocity_zero = True
             total_reward_height_diff = 0
             height_differences = []

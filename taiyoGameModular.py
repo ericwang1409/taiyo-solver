@@ -132,7 +132,7 @@ class Ball:
             balls.remove(self)
 
 
-class TaiyoGameAi:
+class TaiyoGame:
     def __init__(self):
         self.current_ball = self.spawn_new_ball(0)
         self.score = 0
@@ -166,6 +166,63 @@ class TaiyoGameAi:
         self.current_frames = 90
         self.ball_dropping = False
 
+    def show_game_over_screen(self):
+        screen.fill((0, 0, 0))  # Fill the screen with black or any other color for the game over screen
+
+        # Load images
+        side_image_left = pygame.image.load('images/gameovertongue.png')
+        side_image_right = pygame.image.load('images/gameovertongue.png')
+
+        # Scale images if needed
+        side_image_left = pygame.transform.scale(side_image_left, (450, 450))
+        side_image_right = pygame.transform.scale(side_image_right, (450, 450))
+
+        # Calculate positions for the images
+        image_y_position = HEIGHT / 2
+        side_image_left_rect = side_image_left.get_rect(midright=(WIDTH / 2 - 200, image_y_position))
+        side_image_right_rect = side_image_right.get_rect(midleft=(WIDTH / 2 + 200, image_y_position))
+
+        # Display the images
+        screen.blit(side_image_left, side_image_left_rect.topleft)
+        screen.blit(side_image_right, side_image_right_rect.topleft)
+
+        # Display the score in a more prominent way
+        score_font = pygame.font.Font(None, 100)  # Bigger font size for the score
+        score_text = score_font.render(f'Score: {self.score}', True, (255, 255, 255)) 
+        score_text_rect = score_text.get_rect(center=(WIDTH / 2, HEIGHT / 3))
+        screen.blit(score_text, score_text_rect)
+
+        # Display "Game Over!" text above the score
+        game_over_font = pygame.font.Font(None, 74)
+        game_over_text = game_over_font.render('Game Over!', True, (255, 255, 255))
+        game_over_text_rect = game_over_text.get_rect(center=(WIDTH / 2, score_text_rect.top - 60))  # Position above score
+        screen.blit(game_over_text, game_over_text_rect)
+
+        # Draw the replay button
+        button_color = (22, 20, 196) 
+        button_rect = pygame.Rect(WIDTH / 2 - 100, score_text_rect.bottom + 40, 200, 60)  # Positioned below the score
+        pygame.draw.rect(screen, button_color, button_rect)
+
+        # Button text
+        button_font = pygame.font.Font(None, 74)  # Consistent font size with "Game Over"
+        button_text = button_font.render('Replay', True, (0, 0, 0))
+        button_text_rect = button_text.get_rect(center=button_rect.center)
+        screen.blit(button_text, button_text_rect)
+
+        pygame.display.flip()  # Update the display
+
+        # Wait for the player to click the replay button
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit(0)
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_pos = event.pos
+                    if button_rect.collidepoint(mouse_pos):
+                        waiting = False
+
 
     def ball_collision_handler(self, arbiter, space, data):
         ball_shape1, ball_shape2 = arbiter.shapes
@@ -180,7 +237,7 @@ class TaiyoGameAi:
             planetIndex = ball1.planetIndex
             if (planetIndex < len(planet_names)-1) and (ball1.body.body_type == ball2.body.body_type):
 
-                lower_ball = ball1 if ball1.body.position[1] < ball2.body.position[1] else ball2
+                lower_ball = ball1 if ball1.body.position[1] > ball2.body.position[1] else ball2
                 new_position = lower_ball.body.position
 
                 # Create a new Ball instance at the position of the lower ball
@@ -193,37 +250,24 @@ class TaiyoGameAi:
 
         return True
     
-    # action would be a x coordinate between (483, 800)
-    def agent_step(self, action):
-        if not self.ball_dropping and self.current_ball.body.body_type == pymunk.Body.KINEMATIC:
-            self.current_ball.body.position = pymunk.Vec2d(action, self.current_ball.body.position.y)
-            self.ball_dropping = True
-            self.current_ball.body.body_type = pymunk.Body.DYNAMIC
-            self.current_ball.body.mass = 1
-            self.current_ball.body.moment = pymunk.moment_for_circle(1, 0, self.current_ball.radius, (0, 0))
-            space.reindex_shapes_for_body(self.current_ball.body)
-            self.balls.append(self.current_ball)
-            if self.frame_count == 0:
-                self.frame_count = 1
-                self.current_frames = 1
-            else:
-                self.current_frames = self.frame_count
-    
     def run_game(self, moveMade=False, action=None):
-        physics_updates_per_frame = 50
-    
-        for _ in range(physics_updates_per_frame):
-            space.step(1 / (50 * physics_updates_per_frame))
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-        
-        # if everything is settled and the agent makes a move then we step (dropping ball)
-        if moveMade:
-            
-            self.agent_step(action)
+            if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+                if not self.ball_dropping and self.current_ball.body.body_type == pymunk.Body.KINEMATIC:
+                    self.ball_dropping = True
+                    self.current_ball.body.body_type = pymunk.Body.DYNAMIC
+                    self.current_ball.body.mass = 1
+                    self.current_ball.body.moment = pymunk.moment_for_circle(1, 0, self.current_ball.radius, (0, 0))
+                    space.reindex_shapes_for_body(self.current_ball.body)
+                    self.balls.append(self.current_ball)
+                    if self.frame_count == 0:
+                        self.frame_count = 1
+                        self.current_frames = 1
+                    else:
+                        self.current_frames = self.frame_count
 
         screen.blit(background_image, (0, 0))   # Fill the screen with the background
         screen.blit(side_image, side_image_position)  # Draw the side image
@@ -252,24 +296,20 @@ class TaiyoGameAi:
         # Draw the score text onto the screen
         screen.blit(score_text, score_rect.topleft)
 
+        # movement for the dropper-position ball
+        keys = pygame.key.get_pressed()
+        mouse = pygame.mouse.get_pos()
+
+        if not self.ball_dropping and self.current_ball.body.body_type == pymunk.Body.KINEMATIC:
+            # balls follow mouse
+            if (box_x) < mouse[0] < (box_x + box_width) and self.current_ball.body.body_type == pymunk.Body.KINEMATIC:
+                self.current_ball.body.position = pymunk.Vec2d(mouse[0], self.current_ball.body.position.y)
+
         # Spawn new ball after dropping
         if self.frame_count == self.current_frames - 1:
             self.current_ball = self.spawn_new_ball(random.randint(0,4))
             self.ball_dropping = False
             self.current_frames = 90
-
-        # reward is difference in scores
-        reward = 0
-        game_over = False
-        velocity_zero = False
-
-        # Check if all balls are at rest
-        for ball in self.balls:
-            if ball.body.velocity.length > 2:
-                velocity_zero = False
-                break
-            else:
-                velocity_zero = True
 
         # End game conditions
         for ball in self.balls:
@@ -278,26 +318,19 @@ class TaiyoGameAi:
             if (ball.body.position.y - ball.radius < (box_y + 10)) and not self.ball_dropping:
                 for ball in self.balls:
                     self.score += ball.planetIndex
-
-                # returns for endgame
-                game_over = True
-                reward -= 10
-                return reward, game_over, self.score, velocity_zero
+                self.game_reset()
+                self.show_game_over_screen()
         
         pygame.display.flip()
-        dt = clock.tick(200) / 1000.0  # Update dt here (important for movement calculations)
-        original_score = self.score
+        dt = clock.tick(50) / 1000.0  # Update dt here (important for movement calculations)
         space.step(dt)  # Step the simulation
-        reward += (self.score - original_score)
         self.frame_count = (self.frame_count + 1) % 50
 
-        return reward, game_over, self.score, velocity_zero
 
-
-# if __name__ == '__main__':
-#     game = TaiyoGameAi()
+if __name__ == '__main__':
+    game = TaiyoGame()
     
-#     # game loop
-#     while True:
-#         game.run_game()
+    # game loop
+    while True:
+        game.run_game()
     
